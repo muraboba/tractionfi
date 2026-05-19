@@ -9,7 +9,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 ## Tech Stack
 
 - TypeScript monorepo — engine (pure TS) + web (Next.js 16 / React 19 / Tailwind 4)
-- Deploy target: Cloudflare Pages + D1 + Better Auth (planned)
+- Deploy target: Cloudflare Workers + Assets (via @opennextjs/cloudflare) + D1 + Better Auth
 
 ## Current Phase
 
@@ -31,20 +31,25 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## In Progress
 
-_Nothing — design phase complete. Implementation begins in the next session at Phase 0 of `tasks/todo.md`._
+Phase 3 — query layer + API routes. Phase 2 complete (D1 provisioned, migration applied to local + staging).
 
 ## Implemented But Not Deployed
 
 _Nothing yet._
 
+## Implementation Notes
+
+- 2026-05-18: Phase 2 — Better Auth schema generation: hand-transcribed because `@better-auth/cli generate` failed with `dialect.createDriver is not a function` — the SQLite dialect stub requires a live driver instance, not just `{ dialect: "sqlite", type: "sqlite" }`. Schema was verified directly against `@better-auth/core/dist/db/get-tables.mjs` and `better-auth/dist/db/get-migration.mjs`. Table names are singular (`user`, `session`, `account`, `verification`). Date fields use SQLite `DATE` type; booleans use `INTEGER`. Indexes on `session.userId`, `account.userId`, `verification.identifier` match what the CLI would have emitted.
+- 2026-05-18: Phase 2 — `db:migrate:staging` script requires `--env staging` flag (not just `--remote`) because `tractionfi-staging` is declared under `[env.staging]` in `wrangler.toml`. Updated script accordingly.
+- 2026-05-18: Phase 2 — Switched deploy target from Cloudflare Pages (`@cloudflare/next-on-pages`, archived Sept 2025) to Cloudflare Workers + Assets (`@opennextjs/cloudflare`). Dropped `output: "export"` from `next.config.ts` to enable route handlers and Better Auth server-side.
+
 ## Open Items
 
-- [ ] **Phase 0 of `tasks/todo.md` — repo prep.** Commit current scaffolding to `main`, then create `feat/v1-migration` branch. All Phase 1+ work happens on that branch.
-- [ ] **Phase 1 — engine 0.2.0 bump** (structured `Blocker[]`).
-- [ ] **Phases 2–7** — Cloudflare env, query layer, Better Auth + verify, dashboard rebuild, landing/settings, observability.
+- [x] **Phase 0 of `tasks/todo.md` — repo prep.** Done — `feat/v1-migration` branch active.
+- [x] **Phase 1 — engine 0.2.0 bump** (structured `Blocker[]`). Done (commit f19cca7).
+- [x] **Phase 2 — Cloudflare env + D1 provisioning.** Done — two D1 DBs, wrangler.toml, OpenNext config, initial migration applied to local + staging.
+- [ ] **Phases 3–7** — query layer, Better Auth + verify, dashboard rebuild, landing/settings, observability.
 - [ ] **Phase 8** — E2E verification on staging (14-step manual checklist).
 - [ ] **Phase 9** — `/ui-ux-pro-max` design system pass.
 - [ ] **Phase 10–11** — production cutover + cleanup of v0 Worker + KV `USER_DATA`.
-- [ ] Confirm `@better-auth/cli` emits Wrangler-compatible SQL for the D1 adapter (Phase 2 step 2.4 — implementation-time verify).
 - [ ] Verify Cloudflare Workers Alerts thresholding granularity on the Pages-Functions tier (Phase 7 step 7.5 — fallback is Axiom free tier).
-- [ ] Confirm Next.js 16 + Cloudflare Pages adapter choice (static export + API Worker vs. `@cloudflare/next-on-pages`) before Phase 3 API route is final.

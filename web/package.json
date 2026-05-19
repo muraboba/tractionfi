@@ -7,15 +7,26 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:staging": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env staging",
+    "db:migrate:local": "wrangler d1 migrations apply tractionfi-dev --local",
+    "db:migrate:staging": "wrangler d1 migrations apply tractionfi-staging --remote --env staging",
+    "db:migrate:prod": "wrangler d1 migrations apply tractionfi-production --remote --env production",
+    "db:console:local": "wrangler d1 execute tractionfi-dev --local --command",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.19.10",
     "@tractionfi/engine": "*",
+    "better-auth": "^1.6.11",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@better-auth/cli": "^1.4.21",
+    "@cloudflare/workers-types": "^4.20260518.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -23,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.92.0"
   }
 }
