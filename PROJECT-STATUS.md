@@ -13,7 +13,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## Current Phase
 
-**Phase 4 — Better Auth wiring + email-verification flow.** Phases 0–3 complete on `feat/v1-migration`. Engine at 0.2.0. D1 query layer + `user_state` GET/PUT API + blob migrator landed (commit `e80f5bb`). Auth stub returns null until Phase 4 wires Better Auth. **Before starting Phase 4:** set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`).
+**Phase 4 — Better Auth wiring + email-verification flow.** Phases 0–3 complete on `feat/v1-migration`. Engine at 0.2.0. D1 query layer + `user_state` GET/PUT API + blob migrator landed (commit `e80f5bb`). Auth stub returns null until Phase 4 wires Better Auth. **Step 4.0 (first thing in Phase 4):** run `npm run deploy` from `web/` to create the Worker on Cloudflare, then `npx wrangler secret put RESEND_API_KEY` and `npx wrangler secret put BETTER_AUTH_SECRET`. Secrets can only be set on an existing Worker — deploying first is the correct order.
 
 ## Last Changed
 
