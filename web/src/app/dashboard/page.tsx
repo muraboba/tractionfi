@@ -121,6 +121,15 @@ export default function DashboardPage() {
             (no auth yet)
           </p>
         </div>
+        <button
+          onClick={async () => {
+            await fetch('/api/auth/sign-out', { method: 'POST' })
+            window.location.href = '/login'
+          }}
+          className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50"
+        >
+          Log out
+        </button>
       </header>
 
       {blockers.length > 0 ? (

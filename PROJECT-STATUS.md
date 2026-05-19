@@ -13,10 +13,27 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## Current Phase
 
-**Phase 4 — Better Auth wiring + email-verification flow.** Phases 0–3 complete on `feat/v1-migration`. Engine at 0.2.0. D1 query layer + `user_state` GET/PUT API + blob migrator landed (commit `e80f5bb`). Auth stub returns null until Phase 4 wires Better Auth. **Step 4.0 (first thing in Phase 4):** run `npm run deploy` from `web/` to create the Worker on Cloudflare, then `npx wrangler secret put RESEND_API_KEY` and `npx wrangler secret put BETTER_AUTH_SECRET`. Secrets can only be set on an existing Worker — deploying first is the correct order.
+**Phase 4 — Better Auth wiring + email-verification flow — COMPLETE.** All auth flows smoke-tested on `https://tractionfi.judychen.workers.dev`. Next: Phase 5 (dashboard rebuild).
 
 ## Last Changed
 
+- 2026-05-19 (session G) — **Phase 4 smoke test complete** (this session):
+  - **Login redirect bug fixed:** middleware was doing an internal `fetch('/api/auth/get-session')` from Edge runtime which silently returned null on OpenNext/Cloudflare (cookie lost in subrequest). Fix: split auth gate into two layers. `middleware.ts` (Edge) uses `getSessionCookie` from `better-auth/cookies` for cheap cookie-presence check only. New `web/src/app/dashboard/layout.tsx` (Node runtime, server component) does the full `auth.api.getSession()` call + `emailVerified` check.
+  - **Why two layers:** Next.js 16's `proxy.ts` (Node runtime middleware) is not yet supported by `@opennextjs/cloudflare` — deploy fails with `ERROR Node.js middleware is not currently supported`. Watch for OpenNext to land this; when it does, the two-layer split can collapse into one.
+  - **Logout button** added to `web/src/app/dashboard/page.tsx` (POST `/api/auth/sign-out` → redirect to `/login`).
+  - **Smoke tests passed (Steps 4.9 + 4.10):** signup → verify email → login → dashboard ✅; logout → login → dashboard ✅; forgot password → reset email → new password → login ✅; logged-out direct `/dashboard` hit → `/login` ✅; unverified login → `/verify-pending` ✅; cross-browser verify link → marks verified, user logs in manually ✅; garbage token → silently redirects to `/login` (no error UI — acceptable for v1, revisit in Phase 8).
+  - **4 middleware tests updated** (`web/tests/middleware.test.ts`); 8 web tests + 56 engine tests pass.
+  - Deployed as commit in this session.
+- 2026-05-18 (session F) — **Phase 4 mostly implemented + deployed** on `feat/v1-migration` (commits `58c64f8`, `c9506d1`):
+  - **Cloudflare account subdomain renamed:** `jcpurple35` → `judychen` (Cloudflare dashboard, one-shot change). Worker URL is now `https://tractionfi.judychen.workers.dev`.
+  - **Secrets set on Worker:** `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `BETTER_AUTH_API_KEY` (this last one for the Better Auth hosted dashboard / `@better-auth/infra` dash plugin). Also mirrored into `web/.dev.vars` for local dev (gitignored).
+  - **Better Auth wired** (`web/src/server/auth.ts`): lazy `getAuth()` singleton, `trustedProxyHeaders: true` so baseURL infers from `Host` and the same code works on localhost/Workers/custom-domain. Email-and-password + email-verification + reset password all configured. Resend integration with sender `reset@tractionfi.com`. `dash()` plugin from `@better-auth/infra` added. Session shape exposes `emailVerified: boolean` (Option A — no schema change). `web/.dev.vars` is the local-dev secret store (Wrangler convention).
+  - **Auth pages**: `/signup`, `/login`, `/reset`, `/reset/confirm`, `/verify-pending`. Plain forms; design pass deferred to Phase 9. `/verify` was NOT implemented — Better Auth's `/api/auth/verify-email?token=...&callbackURL=/dashboard` handles the click natively via the catch-all route.
+  - **Catch-all auth route**: `web/src/app/api/auth/[...all]/route.ts` — `export async function GET/POST` pattern (Next.js 16's route compiler does NOT synthesize a handler export when using `export { handler as GET }`).
+  - **Middleware**: `web/src/middleware.ts` redirects `/dashboard/*` to `/login` (no session) or `/verify-pending?email=...` (unverified). Uses `fetch` to `/api/auth/get-session` with cookie forwarding.
+  - **3 middleware tests** added (`web/tests/middleware.test.ts`); all 7 web tests + 56 engine tests pass.
+  - **Better Auth dashboard project created** and connected to the deployed Worker.
+  - **3 bundling issues fixed in commit `c9506d1`** — see Implementation Notes below for the three independent failure modes encountered when deploying.
 - 2026-05-18 (session E) — **Phase 3 implemented** (subagent-driven, two-stage review on `feat/v1-migration`, commit `e80f5bb`):
   - **engine/migrations/**: pure-TS blob migrator at `engine/src/migrations/` (`v1.ts` + `index.ts`). `CURRENT_SCHEMA_VERSION = 1`; identity migrator for v1 blobs (paycheck + 4 entry arrays + `settings.skippedMilestones`). `migrateBlob(raw)` returns `{ data, migratedFrom }`; passthrough on current-version blobs preserves reference identity by contract (callers can skip JSON.stringify when `migratedFrom === null`). Throws on unknown schema versions. Exported from `@tractionfi/engine`. 4 new tests in `engine/tests/migrations.test.ts` (56 engine tests total).
   - **web/server/queries/user_state.ts**: `getOrCreateUserState` INSERTs an empty v1 row on first read; on existing rows runs `migrateBlob` and writes back via the spec §2.4 optimistic-concurrency UPDATE before returning. Single bounded re-read on write-back race; throws if still stale (no unbounded recursion). `updateUserState` uses the same `UPDATE … WHERE user_id = ? AND version = ?` pattern; on `meta.changes === 0` returns 409-style `{ ok: false, conflict }` via plain SELECT (no INSERT side-effect on concurrent-delete races).
@@ -44,14 +61,24 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## In Progress
 
-Phase 4 — Better Auth wiring + email-verification flow. Start here next session. Before kicking off Phase 4 work, set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` from `web/`.
+Phase 5 — dashboard rebuild. All Phase 4 smoke tests complete.
 
 ## Implemented But Not Deployed
 
-_Nothing yet._
+_All Phase 4 code is deployed at `https://tractionfi.judychen.workers.dev`. No undeployed work._
 
 ## Implementation Notes
 
+- 2026-05-18: Phase 4 — **Three independent bundling failures hit when deploying Better Auth to OpenNext + Cloudflare Workers.** All fixed in commit `c9506d1`. (1) **Next.js 16 defaults to Turbopack for `next build`**, and OpenNext's chunk loader leaves Turbopack's `requireChunk()` switch empty → every chunked import throws `ChunkLoadError`. Fix: `"build": "next build --webpack"` in `web/package.json`. (2) `@better-auth/kysely-adapter` **dynamic-imports its D1 dialect** (`await import("./d1-sqlite-dialect-*.mjs")`), which still chunk-splits under webpack. Fix: construct Kysely manually with `kysely-d1`'s `D1Dialect` and pass `{ db: kyselyInstance, type: 'sqlite' }` to `betterAuth` — short-circuits `createKyselyAdapter`'s dialect-detection branches at line 29-33. (3) **Next.js 16's route compiler doesn't synthesize a `handler` export when using `export { handler as GET, handler as POST }`** → runtime error `components.ComponentMod.handler is not a function`. Fix: inline `export async function GET/POST` pattern (matches user_state route).
+- 2026-05-18: Phase 4 — Tried `serverExternalPackages: [...]` in `next.config.ts` first to bypass the webpack chunk-split issue. This makes OpenNext copy externalized packages, which fails on Windows with `EPERM: symlink not permitted` because OpenNext uses symlinks during `copyTracedFiles`. Either enable Windows Developer Mode or avoid `serverExternalPackages` entirely. We chose to avoid it.
+- 2026-05-18: Phase 4 — **`workers.dev` subdomain is per-account, not per-Worker.** Format is `<worker>.<account-subdomain>.workers.dev`. Cloudflare Pages allows `<project>.pages.dev` instead, but we switched to Workers in Phase 2 because `@cloudflare/next-on-pages` is archived. To get a nicer URL, rename the account subdomain in Cloudflare dashboard → Workers & Pages → Subdomain (one-shot, can't undo). We renamed to `judychen`.
+- 2026-05-18: Phase 4 — **`wrangler secret put` is interactive** (prompts for value). Can't be automated from a non-TTY shell. `wrangler secret list` confirms which secrets exist by name (never reveals values). To reset a secret, just `put` again — overwrites in place, no delete needed.
+- 2026-05-18: Phase 4 — Local dev secrets go in `web/.dev.vars` (Wrangler convention, gitignored). Production secrets are set via `wrangler secret put`. Without `.dev.vars`, `npm run dev` would 500 on any auth request.
+- 2026-05-18: Phase 4 — `BETTER_AUTH_SECRET` and `BETTER_AUTH_API_KEY` are different things. `_SECRET` is the random string Better Auth uses to sign sessions/tokens (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` — openssl isn't on Windows by default). `_API_KEY` is for the `@better-auth/infra` dash plugin and comes from the Better Auth hosted dashboard.
+- 2026-05-18: Phase 4 — `/verify` route NOT implemented. Better Auth's `GET /api/auth/verify-email?token=...&callbackURL=/dashboard` handles email-click natively through the catch-all route. Email URLs Better Auth generates already include `callbackURL=/dashboard` (passed via signup's `callbackURL` body field).
+- 2026-05-18: Phase 4 — Better Auth's `requireEmailVerification: true` + `autoSignIn: false` means **no session is created on signup**. So `/verify-pending` cannot read email from session — reads from `?email=` query param instead.
+- 2026-05-18: Phase 4 — `/api/auth/get-session` is the correct endpoint path (not `/api/auth/session`).
+- 2026-05-19: Phase 4 — **Auth gate must be split across two layers** on this stack (Next.js 16 + OpenNext + Cloudflare Workers). (1) `middleware.ts` runs in Edge runtime — cannot import Better Auth (fails on `node:crypto` etc.) and cannot do internal fetches to `/api/auth/get-session` (cookie gets lost in the subrequest). Use `getSessionCookie` from `better-auth/cookies` for cookie-presence check only. (2) Full session validation + `emailVerified` check belongs in the route's server component layout where the Node.js runtime is available. `proxy.ts` (Next.js 16 Node-runtime middleware) would fix this in one layer, but `@opennextjs/cloudflare` ≥1.19.10 doesn't support it yet (`ERROR Node.js middleware is not currently supported`).
 - 2026-05-18: Phase 3 — `@cloudflare/vitest-pool-workers@^0.16.6` requires `vitest@^4.1.0` peer; web/ runs vitest 4, engine/ stays on vitest 2. The pool is ESM-only — config must be `vitest.config.mts`. The `cloudflareTest` Vite plugin (NOT `defineWorkersConfig`) is the supported API in this version; use `defineConfig({ plugins: [cloudflareTest({ main, wrangler })] })`. globalSetup receives a `Vitest` instance from `vitest/node` and calls `vitest.provide('D1_MIGRATIONS', migrations)` so each test can `inject('D1_MIGRATIONS')` and pass to `applyD1Migrations(env.DB, migrations)`. Tests must seed stub `user` rows because `user_state.user_id` FKs to `user(id)`.
 - 2026-05-18: Phase 3 — `user_state` SQL uses CURRENT_TIMESTAMP at INSERT/UPDATE time. The `created_at` and `updated_at` columns are TEXT (not DATE) per `0001_initial.sql`, which differs from Better Auth's DATE columns. Spec §2.1 specified TEXT for our application table; intentional.
 - 2026-05-18: Phase 3 — `migrateBlob` reference-identity contract: when `migratedFrom === null`, the returned `data` is the SAME REFERENCE as the input. This is contractual, not incidental — do NOT wrap a future migrator in `structuredClone` for "safety" without auditing every caller for skipped serialization paths.
@@ -68,7 +95,7 @@ _Nothing yet._
 - [x] **Phase 1** — engine 0.2.0 with structured `Blocker[]` (commit `a5ed389`).
 - [x] **Phase 2** — Cloudflare Workers + D1 wired. Single `tractionfi` DB. OpenNext adapter. Initial migration applied (commits `c998548`, `c9a9947`).
 - [x] **Phase 3** — query layer + user_state GET/PUT API + blob migrator (commit `e80f5bb`). 56 engine + 4 web tests; clean typechecks.
-- [ ] **Phase 4** — Better Auth + email verify flow. **Start here.** Before starting: set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`). Resolve the auth-stub shape mismatch (`emailVerified: INTEGER` vs `emailVerifiedAt: string | null`) — see TODO in `web/src/server/auth.ts`.
+- [x] **Phase 4** — complete. All auth flows smoke-tested. Login redirect bug fixed (middleware split). Logout button added. 8 web + 56 engine tests pass.
 - [ ] **Phases 5–7** — dashboard rebuild, landing/settings, observability.
 - [ ] **Phase 8** — E2E verification (14-step manual checklist).
 - [ ] **Phase 9** — `/ui-ux-pro-max` design system pass.
