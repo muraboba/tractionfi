@@ -1,19 +1,78 @@
-// Stub. Real implementation lands in Phase 4 (Better Auth + email-verification flow).
-// Returns null until Phase 4 wires Better Auth — routes will 401 in the meantime.
-//
-// TODO(Phase 4) — emailVerifiedAt shape mismatch with Better Auth:
-// Better Auth stores `user.emailVerified` as INTEGER (0/1), not a timestamp.
-// Phase 4 must choose one of:
-//   A) Expose `emailVerified: boolean` in Session, checking `emailVerified > 0` — no schema change.
-//   B) Add an `emailVerifiedAt: DATE` column to the migration and bridge from the INTEGER flag.
-// The truthiness check in route.ts works for either shape; the type here just needs updating then.
+import { betterAuth } from 'better-auth'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { Resend } from 'resend'
+
 export interface Session {
   user: {
     id: string
-    emailVerifiedAt: string | null
+    email: string
+    emailVerified: boolean
   }
 }
 
-export async function getSession(_request: Request): Promise<Session | null> {
-  return null
+type AuthEnv = CloudflareEnv & {
+  BETTER_AUTH_SECRET: string
+  RESEND_API_KEY: string
+}
+
+let authInstance: ReturnType<typeof buildAuth> | null = null
+
+function buildAuth(env: AuthEnv) {
+  const resend = new Resend(env.RESEND_API_KEY)
+  return betterAuth({
+    appName: 'TractionFI',
+    database: env.DB,
+    secret: env.BETTER_AUTH_SECRET,
+    trustedProxyHeaders: true,
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 12,
+      requireEmailVerification: true,
+      autoSignIn: false,
+      sendResetPassword: async ({ user, url }) => {
+        await resend.emails.send({
+          from: 'reset@tractionfi.com',
+          to: user.email,
+          subject: 'Reset your TractionFI password',
+          html: `<p>Reset your password by clicking the link below. This link expires in 1 hour.</p><p><a href="${url}">${url}</a></p>`,
+        })
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: false,
+      sendVerificationEmail: async ({ user, url }) => {
+        await resend.emails.send({
+          from: 'reset@tractionfi.com',
+          to: user.email,
+          subject: 'Verify your TractionFI account',
+          html: `<p>Click to verify your account:</p><p><a href="${url}">${url}</a></p>`,
+        })
+      },
+    },
+    session: {
+      expiresIn: 60 * 60 * 24 * 30,
+      updateAge: 60 * 60 * 24,
+    },
+  })
+}
+
+export async function getAuth() {
+  if (authInstance) return authInstance
+  const { env } = await getCloudflareContext({ async: true })
+  authInstance = buildAuth(env as AuthEnv)
+  return authInstance
+}
+
+export async function getSession(request: Request): Promise<Session | null> {
+  const auth = await getAuth()
+  const result = await auth.api.getSession({ headers: request.headers })
+  if (!result?.user) return null
+  return {
+    user: {
+      id: result.user.id,
+      email: result.user.email,
+      emailVerified: result.user.emailVerified,
+    },
+  }
 }

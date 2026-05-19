@@ -6,7 +6,7 @@ import type { CurrentBlob } from '@tractionfi/engine'
 
 export async function GET(request: Request) {
   const session = await getSession(request)
-  if (!session || !session.user.emailVerifiedAt) {
+  if (!session || !session.user.emailVerified) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
   const { env } = await getCloudflareContext({ async: true })
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   const session = await getSession(request)
-  if (!session || !session.user.emailVerifiedAt) {
+  if (!session || !session.user.emailVerified) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
   const { env } = await getCloudflareContext({ async: true })
