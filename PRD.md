@@ -1,8 +1,8 @@
 # TractionFI — Product Requirements Document
 
 **Owner:** murasaki35@gmail.com
-**Last updated:** 2026-05-18
-**Status:** Draft v0.4
+**Last updated:** 2026-05-19
+**Status:** Draft v0.5
 
 ---
 
@@ -128,7 +128,28 @@ The Recommendations tab displays:
 - **Current priority:** the first incomplete phase, rendered as a detailed card (progress bar, $ amount, "why this matters," action steps).
 - **Roadmap:** the full ordered list of phases, each marked completed / active / skipped / not-applicable / not-started.
 - **Skip flow:** users may explicitly skip a milestone after a confirmation dialog. Skipped milestones are tracked in saved state and surfaced in the roadmap with a "revisit" affordance. (Inherited from existing app behavior; deliberate UX divergence from the flowchart — the flowchart has no skip concept.)
-- **Caveats:** if any required input is missing (e.g., no expenses entered yet), surface a "complete this first" banner instead of a recommendation. See §5.1 FR-4a.
+- **Caveats:** if any required input is missing (e.g., no expenses entered yet), surface a "complete this first" banner instead of a recommendation. See §5.1 FR-4a and §4.5 below.
+
+### 4.5 Empty-state and complete-budget banner UX
+
+When the engine returns the `complete_budget` blocked milestone (Phase 1 inputs missing), the UI behaves as follows:
+
+**First-run / empty-state landing.** A newly-verified user with no `user_state` data lands on the **Recommendations tab**. The tab renders the same complete-budget card as the not-empty blocked state — empty-state IS the banner state. No first-run flag, no welcome modal, no guided tour. Rendering is purely derived from `engineOutput.currentPriority.id === 'complete_budget'`.
+
+**Recommendations tab card (blocked state).**
+- Title: "Set up your budget to start"
+- Subtitle: a generic one-liner from the engine's `complete_budget` milestone `description` (e.g., "Add the items below to start getting recommendations.")
+- Checklist: one row per `Blocker` in `currentPriority.data.blockers`. Each row shows the blocker's `message` and a "Go to {tab} →" deep-link button derived from `blocker.tab`.
+- For `no_income`: the row message mentions both Paycheck and Incomes ("Add your paycheck — or other income on the Incomes tab"), but the button routes to Paycheck. Accepted rough edge for v1.
+- When a blocker clears, its row disappears in the next render. When all blockers clear, the card flips to the normal active-milestone view.
+
+**Cross-tab indicators (visible on tabs other than Recommendations).**
+- **Header pill:** "Setup: N left" where `N = engineOutput.blockers.length`. Neutral tone (warm gray / muted accent), not red — this is "setup mode," not an error. Click → routes to Recommendations tab. Hidden when `blockers.length === 0`. Remains visible on the Recommendations tab too (harmless redundancy with the card).
+- **Tab-label gear icon:** a small settings-gear icon on the Recommendations tab label only, when blocked. Reinforces the "setup mode" framing.
+
+**Sidebar metrics in empty state.** Net worth, cashflow, savings rate, debt-to-income render as `$0` or `—` placeholders, not hidden. The user can see what TractionFI tracks even before filling anything in.
+
+**Other tabs during empty state.** Render normally with empty add-item rows; only the cross-tab pill + gear icon indicate the blocked state.
 
 ---
 
@@ -143,7 +164,8 @@ The Recommendations tab displays:
 - **FR-4a (Phase 1 / incomplete budget):** If required Phase 1 inputs are missing — no income entered, no expenses entered, or no debts/assets ever populated — the engine returns a `"complete_budget"` recommendation pointing the user to fill in those tabs. It does NOT silently default to $0 and produce downstream recommendations against an empty budget.
 - **FR-4b (Emergency fund detection):** Emergency fund balance comes from assets explicitly designated as `isEmergencyFund: true` (via a checkbox in the Assets tab), summed. No name-matching heuristics or cash-asset fallbacks. If the user has cash assets but none designated, the engine prompts them to designate one.
 - **FR-4c (Yearly constants):** All year-dependent values (IRS 401k limit, IRA limit, HSA limits, catch-up amounts) live in a single `lib/engine/constants.ts` module keyed by tax year. The engine reads from the current year's constants. Updating annually is a single-file change.
-- **FR-4d (Engine versioning):** The engine module exports a semver string. Every saved interview result includes the engine version that produced it. When a user loads stale results computed by an older engine version, the UI flags this and offers to recompute.
+- **FR-4d (Engine version surfaced in UI):** The engine module exports a semver string. The dashboard footer displays the current `ENGINE_VERSION` for transparency. **No stored results, so no "stale recompute" UX** — every page load recomputes against current `userData` using the current engine version. (Revised from earlier draft that proposed stamping results; results are not persisted in v1 — see §9.4.)
+- **FR-4e (Structured blockers):** When the engine returns the `complete_budget` blocked milestone, both top-level `engineOutput.blockers` and `currentPriority.data.blockers` are typed as `Blocker[]` where `Blocker = { code, message, tab }`. `code ∈ { 'no_income' | 'no_expenses' | 'no_ef_designation' }`. `tab` is the dashboard tab the user should visit to resolve the blocker. The web app uses `tab` to render deep-link CTAs.
 - **FR-5:** Decision logic must be unit-testable in isolation from the UI. (Pure functions, no I/O.) Coverage target: every flowchart phase has at least one test for the active state, completed state, and not-applicable state where relevant.
 
 ### 5.2 Interview UI
@@ -170,6 +192,7 @@ The Recommendations tab displays:
 
 - **FR-17:** Email + password signup and login. Email verification required before first save.
 - **FR-17a:** Passwords: minimum 12 characters, no other complexity requirements. Better Auth's breach-list check enabled (rejects passwords found in known compromise dumps). No periodic expiry.
+- **FR-17b (Email-verification UX):** After signup, the user is redirected to `/verify-pending` — a full-page lockout screen with a single card: "We sent a verification link to {email}." The card offers **Resend** (rate-limited per FR-23), **Use different email** (logs out, returns to signup), and **Already verified?** (re-checks server state, useful when the link was clicked in another tab). Any request to `/dashboard*` from a session whose `email_verified_at` is null is intercepted by middleware and redirected to `/verify-pending`. Verification link → `/verify?token=...` → marks `email_verified_at`, signs the user in (sets cookie), redirects to `/dashboard`. The verify endpoint works in any browser, not just the one that signed up; the token is the source of truth, not the session cookie. Expired token (Better Auth default ~24h) shows "Link expired" with a resend CTA; invalid token shows a generic "Link no longer valid" with resend. **No data entry or D1 writes are possible while unverified** — eliminates buffer-flush and cross-device sync edge cases at the cost of the user not seeing the product before verification (acceptable; they're already past the landing page).
 - **FR-18:** Password reset via emailed link to `reset@tractionfi.com`. Tokens are single-use, expire in 1 hour, and invalidate on use.
 - **FR-19:** Optional: social login (Google, Apple) for v1.5. Email/password is sufficient v1.
 - **FR-20:** Session management via secure HTTP-only cookies. Sessions valid for 30 days, refreshed on use.
@@ -190,7 +213,14 @@ The Recommendations tab displays:
 - **NFR-5 (Mobile):** Fully responsive. Most users will arrive on mobile.
 - **NFR-6 (Security):** Passwords hashed with Argon2id (or bcrypt as fallback). All traffic HTTPS (Cloudflare-managed cert). Financial data encrypted at rest at the storage layer (D1 default). Sensitive fields (income, debt balances) optionally encrypted application-side with a per-user key derived from password — decision deferred, see OQ-3.
 - **NFR-7 (Data residency):** US-based storage to align with US-only product scope.
-- **NFR-8 (Observability):** v1 uses Cloudflare Workers default logging via `wrangler tail` for live debugging and Workers Logpush to R2 for persistent logs. All write-to-D1 operations emit a structured log line on failure (user_id, operation, error). No third-party APM in v1. Sentry deferred to v1.5 if error rates warrant it.
+- **NFR-8 (Observability):** v1 uses Cloudflare-native observability — no third-party APM. Stack:
+  - **Workers Logs** (Cloudflare dashboard) — primary live-debug and recent-log search surface. Source maps are uploaded with the bundle so stack traces resolve to original engine/web source.
+  - **Workers Logpush to R2** — long-term persistent log retention beyond the Workers Logs dashboard window.
+  - **`wrangler tail`** — local-dev tail.
+  - **Workers Alerts / Notifications** — invocation-error alerts to `murasaki35@gmail.com`. Exact threshold is configured during implementation against whatever the Pages-Functions tier supports. If Cloudflare-native thresholding is insufficient, fallback is **Axiom free tier** (Workers-native, no PII export — preserves the no-third-party-APM stance for stack traces and request bodies).
+  - **Structured error log schema** — every error path (all D1 write failures, all auth errors, all engine throw paths, all Resend send failures mirrored via Resend webhook) emits a fixed JSON line: `{ event: 'error', route, operation, error_class, user_id, engine_version, timestamp, detail }`. `detail` is a short string. **Never raw financial values, never `email`, never session tokens.** `user_id` (UUID) is fine — it's already an opaque identifier.
+  - **Resend monitoring** — Resend's own delivery dashboard is the source of truth for email delivery health; the Resend webhook mirrors failure events into our Worker logs for unified search.
+  - **Sentry deferred to v1.5.** Re-evaluation trigger: a production bug unresolvable from Workers Logs + source maps, OR MAU crosses ~1k where error grouping starts paying off. If added, requires strict `beforeSend` scrubbing of financial values, emails, and tokens.
 - **NFR-9 (Graceful degradation):** If D1 is unavailable, the dashboard surfaces a clear "we can't save right now — your changes are held locally and will sync when service is restored" banner. The engine runs entirely client-side, so recommendations still compute on whatever data is loaded. If Resend is unavailable during password reset, the user sees "email service is temporarily unavailable — try again in a few minutes."
 
 ---
@@ -258,7 +288,7 @@ Target for v1 launch: ≥50% interview completion, ≥80% comprehension self-rep
 
 **Clerk** is the fallback if we want to ship in days, not weeks. Tradeoff: every user's email and login event flows through Clerk; free up to 10k MAU then ~$25/mo per 1k MAU. Acceptable but inconsistent with our privacy posture.
 
-### 9.4 Data model (sketch)
+### 9.4 Data model
 
 ```
 users
@@ -275,17 +305,61 @@ sessions
   expires_at
   created_at
 
-interviews
-  id (uuid, pk)
-  user_id (fk)
-  inputs (json — all interview answers)
-  results (json — computed recommendations, cached)
-  status ('in_progress' | 'completed')
+user_state
+  user_id (uuid, pk, fk → users.id)
+  blob (json — { schemaVersion, userData, settings: { skippedMilestones } })
+  version (integer — optimistic-concurrency token; incremented on every write)
   created_at
   updated_at
 ```
 
-One active interview per user at a time, with history retained so users can see how their plan has evolved.
+**One mutable row per user.** No history table in v1. The engine recomputes recommendations on every load, so there is **no `results` column** — eliminates stale-cache concerns and the "stored output uses old engine version" UX entirely.
+
+**Optimistic concurrency contract.** Every write is an atomic SQL statement of the form:
+
+```sql
+UPDATE user_state
+SET blob = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP
+WHERE user_id = ? AND version = ?
+```
+
+The client sends the version it last read. The server checks `meta.changes` from the D1 response; if `0`, the version did not match (another tab/device wrote concurrently) and the API returns **HTTP 409 Conflict** with the current server version and blob. The client surfaces a "your data changed in another tab — reload to continue" banner and re-reads. Last-write-wins is never the default — the user must explicitly accept by re-reading and re-applying their change.
+
+**Settings live in the blob**, not a separate `user_settings` table. v1 has only `skippedMilestones`; expanding to a real settings table only when justified by multiple unrelated settings.
+
+**Blob shape (TypeScript):**
+
+```ts
+{
+  schemaVersion: number          // bumped when blob shape changes; drives the migrator
+  userData: UserData              // from @tractionfi/engine — paycheck, incomes, expenses, assets, debts
+  settings: {
+    skippedMilestones: MilestoneId[]
+  }
+}
+```
+
+**Snapshot history deferred to v1.5.** No `user_state_snapshots` table in v1. When added in v1.5, the `version` column doubles as the snapshot key — non-breaking. Aligns with NFR-1 (don't store data the product doesn't actively use).
+
+### 9.5 Migrations
+
+Three-layer migration model:
+
+1. **SQL schema migrations (D1 tables).** Wrangler native — `wrangler d1 migrations create/apply`. Plain SQL files in `web/migrations/`. One initial migration (`0001_initial.sql`) covering the Better Auth schema + `user_state`. Better Auth schema is generated via `@better-auth/cli` if it emits Wrangler-compatible SQL; otherwise transcribed by hand into the same file. (Verify during implementation — flagged in PROJECT-STATUS.md open items.)
+
+2. **Query layer.** Native D1 prepared statements, centralized in `web/src/server/queries/*.ts`, one file per table. No ORM in v1 — query count is ~5–10, an ORM doesn't earn its keep at that scale. **Kysely as a hedge** if query count grows past ~20.
+
+3. **Blob schema migrations (the JSON inside `user_state.blob`).** Pure-TS migrator in `engine/src/migrations/`. Signature:
+
+   ```ts
+   migrateBlob(raw: unknown): { data: BlobV<N>, migratedFrom: number | null }
+   ```
+
+   Runs on every GET. If the read blob's `schemaVersion < CURRENT_SCHEMA_VERSION`, the migrator chains version-N → N+1 migrators and returns the migrated blob with `migratedFrom` set to the original version. **The GET handler writes the migrated blob back through the same optimistic-concurrency UPDATE** before returning to the client, so the client only ever sees post-migration data. Migrators are **immutable once shipped** — bugs in a shipped migrator are fixed by appending a new migrator (version N+1 → N+2), never by editing the old one. The migrator is exported from `@tractionfi/engine` so both the web server and any future client-side fallback can run identical logic.
+
+   **Migration policy:** additive changes preferred (add new fields, deprecate old ones in place). Destructive changes (renaming, removing) require an explicit deprecation cycle — leave the old field readable for at least one release.
+
+4. **Deploy workflow.** SQL migrations are applied manually via `wrangler d1 migrations apply <db> --remote` for staging and production. **Not wired into `wrangler deploy`** — this is a finance app, every schema change gets human eyes. Local dev: `wrangler d1 migrations apply <db> --local` after every pull that adds a migration; wrap in a setup script or document prominently in `web/README.md`.
 
 ---
 
@@ -300,6 +374,8 @@ One active interview per user at a time, with history retained so users can see 
 - Multi-factor authentication (v1.5, see FR-24).
 - Bank-account linking, Plaid integration, or transaction import.
 - Real-time market data, portfolio rebalancing, or fund recommendations.
+- **Snapshot history of user financial state (v1.5).** The `user_state` row is mutable, last-write-wins (after concurrency check). No "see how my plan evolved over time" view in v1 — added in v1.5 via a `user_state_snapshots` table keyed by the existing `version` column. Aligns with NFR-1: don't store data the product doesn't actively use.
+- **Pay statement screenshot OCR / vision extraction to auto-fill the Paycheck tab (v1.5).** Out of v1 because it adds a vision-API dependency and a PII surface (full pay statement contents — SSN suffix, address, employer, sometimes account numbers) that needs its own privacy-design pass against NFR-1. v1 ships with manual entry only. v1.5 design must specify: which provider, what data leaves our system, retention/training policy with the provider, low-confidence/partial-extraction UX, and review-before-save flow.
 
 ---
 
@@ -384,15 +460,18 @@ Running design skills before any code exists wastes effort. Running them after e
 
 ## 13. Next steps
 
-1. ✅ Review and approve this PRD (v0.4).
-2. **Extract the recommendation engine into a standalone pure-TS module with unit tests.** No infrastructure needed; can be done immediately from the existing `recommendations-tab.tsx`. Realign thresholds to canonical (10% / 4–10%), move year-dependent constants to `constants.ts`, add the `complete_budget` state (FR-4a) and explicit emergency fund detection (FR-4b), stamp the engine version (FR-4d). Cover every phase with Vitest. **This becomes the trust anchor for the rest of the build.**
-3. Scaffold the new app: Next.js + TypeScript + Tailwind + shadcn/ui, mirroring the existing setup. Drop in the extracted engine module.
-4. Set up the staging Cloudflare environment: new Worker, new D1 database with the schema in §9.4, `staging.tractionfi.com` DNS, secrets (`RESEND_API_KEY`, auth secret).
-5. Wire up Better Auth + D1: signup, login, password reset (using existing Resend template + sender), email verification, sessions via HTTP-only cookies.
-6. Port the dashboard tabs to the new app. Repoint data load/save at the D1-backed API. Add the explicit "isEmergencyFund" flag to asset entries.
-7. Build the landing page (§4.2) — value prop, signup CTA, footer with privacy/ToS/disclaimer.
-8. Build settings: account deletion (FR-22) and data export (FR-22a).
-9. Verify end-to-end on staging: signup → email verify → fill data → see recommendations → log out → log in from another device → see same data.
-10. Invoke `/ui-ux-pro-max` to establish the design system. Apply it.
-11. Cutover: swap the production route from old Worker to new Worker.
-12. (After ~1 week stable) Run the cleanup checklist in §11 Phase C.
+1. ✅ Review and approve this PRD (v0.5).
+2. ✅ **Extract the recommendation engine into a standalone pure-TS module with unit tests.** Done — `engine/` package shipped at version 0.1.0 with all 6 phase rules, canonical 10% / 4–10% thresholds, year-dependent constants isolated in `engine/src/constants.ts`, `complete_budget` blocked-milestone state (FR-4a), explicit emergency fund detection (FR-4b), engine version surfaced via `ENGINE_VERSION` export. Vitest coverage in `engine/tests/`.
+3. **Bump engine to 0.2.0** — add structured `Blocker[]` type (FR-4e) replacing the existing `blockers: string[]` and `data.blockers: string[]`. Update tests. (Minor bump rationale: pre-1.0, no live consumers, recommendations unchanged.)
+4. Scaffold the new app: Next.js 16 + React 19 + TypeScript + Tailwind 4 + shadcn/ui in `web/` (already partly in place). Wire the workspace dep on `@tractionfi/engine`.
+5. Set up the staging Cloudflare environment: Cloudflare Pages on `staging.tractionfi.com`, new D1 database, secrets (`RESEND_API_KEY`, auth secret). Apply initial SQL migration (§9.5).
+6. Wire up Better Auth + D1: signup, login, password reset (using existing Resend template + sender), email verification (FR-17b: `/verify-pending` lockout, `/verify?token` flow, middleware gate), sessions via HTTP-only cookies.
+7. Implement the `user_state` query layer (§9.4) with the optimistic-concurrency contract. Implement the blob migrator scaffolding (§9.5) with `schemaVersion = 1` as the initial version.
+8. Port the dashboard tabs to the new app. Repoint data load/save at the D1-backed API. Add the explicit `isEmergencyFund` flag to asset entries. Implement the empty-state + complete-budget banner UX (§4.5): header pill, Recommendations-tab gear icon, blocker checklist card with deep-link CTAs.
+9. Build the landing page (§4.2) — value prop, signup CTA, footer with privacy/ToS/disclaimer.
+10. Build settings: account deletion (FR-22) and data export (FR-22a).
+11. Wire up observability (NFR-8): structured error log schema, Workers Logpush to R2, Workers Alerts on invocation errors, source maps in bundle, Resend webhook → Worker log mirror.
+12. Verify end-to-end on staging: signup → `/verify-pending` → click verify link → `/dashboard` empty state → fill paycheck → blocker clears → fill expenses → blocker clears → see active milestone → log out → log in from another device → see same data → trigger 409 conflict by editing in two tabs.
+13. Invoke `/ui-ux-pro-max` to establish the design system. Apply it.
+14. Cutover: swap the production route from old Worker to new Worker.
+15. (After ~1 week stable) Run the cleanup checklist in §11 Phase C.

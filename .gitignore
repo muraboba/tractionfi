@@ -43,3 +43,14 @@ yarn-error.log*
 
 # Certificates
 *.pem
+*.key
+_KEYS/
+
+# OS (extras)
+desktop.ini
+
+# Editor (extras)
+*.swp
+*.swo
+
+# Session scratch (created by Claude Code during sessions)
