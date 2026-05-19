@@ -128,7 +128,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-red-900">Complete your budget first</h2>
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-red-900">
             {blockers.map((b) => (
-              <li key={b}>{b}</li>
+              <li key={b.code}>{b.message}</li>
             ))}
           </ul>
         </section>

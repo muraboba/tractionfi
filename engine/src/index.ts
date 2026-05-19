@@ -26,6 +26,13 @@ export const ENGINE_VERSION = '0.2.0'
 export * from './types'
 export { CURRENT_LIMITS, THRESHOLDS } from './constants'
 export { toMonthly, paycheckToMonthly, payPeriodsPerYear } from './frequency'
+export {
+  migrateBlob,
+  emptyBlobV1,
+  CURRENT_SCHEMA_VERSION,
+  type CurrentBlob,
+  type MigrateResult,
+} from './migrations'
 
 const RULES = [
   phase2StarterEmergencyFund,

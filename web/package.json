@@ -14,7 +14,8 @@
     "db:migrate:prod": "wrangler d1 migrations apply tractionfi --remote",
     "db:console:local": "wrangler d1 execute tractionfi --local --command",
     "db:console:prod": "wrangler d1 execute tractionfi --remote --command",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.10",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@better-auth/cli": "^1.4.21",
+    "@cloudflare/vitest-pool-workers": "^0.16.6",
     "@cloudflare/workers-types": "^4.20260518.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -35,6 +37,7 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^4.1.6",
     "wrangler": "^4.92.0"
   }
 }
