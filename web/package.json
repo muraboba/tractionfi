@@ -9,11 +9,11 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:staging": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env staging",
-    "db:migrate:local": "wrangler d1 migrations apply tractionfi-dev --local",
-    "db:migrate:staging": "wrangler d1 migrations apply tractionfi-staging --remote --env staging",
-    "db:migrate:prod": "wrangler d1 migrations apply tractionfi-production --remote --env production",
-    "db:console:local": "wrangler d1 execute tractionfi-dev --local --command",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "db:migrate:local": "wrangler d1 migrations apply tractionfi --local",
+    "db:migrate:prod": "wrangler d1 migrations apply tractionfi --remote",
+    "db:console:local": "wrangler d1 execute tractionfi --local --command",
+    "db:console:prod": "wrangler d1 execute tractionfi --remote --command",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {

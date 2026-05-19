@@ -5,25 +5,9 @@ compatibility_flags = ["nodejs_compat"]
 
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
-# Top-level binding is the LOCAL dev database. `npm run db:migrate:local`
-# applies to this one via --local; production-side `wrangler dev` uses this too.
+# Single D1 database — used in production (via --remote) and shadowed
+# locally by Wrangler (via --local, which writes to .wrangler/state/v3/d1/).
 [[d1_databases]]
 binding = "DB"
-database_name = "tractionfi-dev"
-database_id = "f80236fe-a15b-4de6-9854-5080357d66ee"
-
-# Staging environment — used by `wrangler deploy --env staging` and
-# `wrangler d1 migrations apply tractionfi-staging --remote`.
-[env.staging]
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "tractionfi-staging"
-database_id = "a2aa68a4-ba5c-45b6-8491-f01533339873"
-
-# Production environment — provisioned in Phase 10. Database doesn't exist yet.
-# When it does, fill in database_id and uncomment.
-# [env.production]
-# [[env.production.d1_databases]]
-# binding = "DB"
-# database_name = "tractionfi-production"
-# database_id = "<production-id>"
+database_name = "tractionfi"
+database_id = "fff44e43-cb58-458e-b8e0-3dbd990f2579"

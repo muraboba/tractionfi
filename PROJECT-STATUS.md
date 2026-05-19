@@ -17,6 +17,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## Last Changed
 
+- 2026-05-18: Phase 2 follow-up — consolidated to solo-minimal D1 model. Dropped tractionfi-dev and tractionfi-staging cloud DBs; created tractionfi (database_id fff44e43-cb58-458e-b8e0-3dbd990f2579) as the single production DB. Local dev uses Wrangler's --local mode against the same name. No [env.staging] stanza in wrangler.toml. Migration 0001_initial.sql applied to both remote and local.
 - 2026-05-18 (session C) — **Tier 2 UX gaps resolved** (one-at-a-time lockdown with self-review on each item):
   - **Tier 2 #1 email-verification UX:** locked Option A (full lockout `/verify-pending` screen, middleware-enforced gate, `/verify?token` flow). No data entry possible while unverified — eliminates buffer-flush / cross-device sync edge cases.
   - **Tier 2 #2 empty-state UX:** locked — newly-verified user lands on Recommendations tab; empty-state IS the complete-budget banner. Card has deep-link CTAs per blocker. No first-run flag, no welcome modal, no tour.
@@ -31,7 +32,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## In Progress
 
-Phase 3 — query layer + API routes. Phase 2 complete (D1 provisioned, migration applied to local + staging).
+Phase 3 — query layer + API routes. Phase 2 complete (D1 provisioned, migration applied to local + remote; solo-minimal model).
 
 ## Implemented But Not Deployed
 
