@@ -115,13 +115,22 @@ export interface Milestone {
   data: Record<string, unknown>
 }
 
+export type BlockerCode = 'no_income' | 'no_expenses' | 'no_ef_designation'
+export type BlockerTab = 'paycheck' | 'expenses' | 'assets'
+
+export interface Blocker {
+  code: BlockerCode
+  message: string
+  tab: BlockerTab
+}
+
 export interface EngineOutput {
   engineVersion: string
   taxYear: number
   currentPriority: Milestone | null
   milestones: Milestone[]
-  /** Human-readable blockers (e.g., "no expenses entered"). Non-empty means engine returned early. */
-  blockers: string[]
+  /** Structured blockers when Phase 1 inputs are missing. Empty when unblocked. */
+  blockers: Blocker[]
   /** Derived metrics exposed for the UI summary section. */
   metrics: {
     monthlyIncome: number

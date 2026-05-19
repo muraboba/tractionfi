@@ -1,6 +1,6 @@
 {
   "name": "@tractionfi/engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Decision engine for TractionFI personal finance recommendations. Pure TypeScript, no I/O, no framework dependencies.",
   "private": true,
   "type": "module",

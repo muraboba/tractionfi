@@ -26,7 +26,7 @@ describe('Phase 1 — complete budget gate', () => {
       assets: [makeAsset({ name: 'Checking', value: 5_000, isEmergencyFund: false })],
     })
     const out = evaluate(userData)
-    expect(out.blockers.some((b) => b.includes('emergency fund'))).toBe(true)
+    expect(out.blockers.some((b) => b.code === 'no_ef_designation')).toBe(true)
   })
 
   it('does NOT block when user has cash but it is designated as emergency fund', () => {

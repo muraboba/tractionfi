@@ -10,6 +10,7 @@ import { phase6aHSA } from './rules/phase6a-hsa'
 import { phase6bCollege } from './rules/phase6b-college'
 import { phase6cLongTerm } from './rules/phase6c-long-term'
 import type {
+  Blocker,
   EngineOutput,
   EvaluateOptions,
   Milestone,
@@ -20,7 +21,7 @@ import type {
   UserData,
 } from './types'
 
-export const ENGINE_VERSION = '0.1.0'
+export const ENGINE_VERSION = '0.2.0'
 
 export * from './types'
 export { CURRENT_LIMITS, THRESHOLDS } from './constants'
@@ -67,39 +68,49 @@ function computeMetrics(userData: UserData) {
   }
 }
 
-function findBlockers(userData: UserData): string[] {
-  const blockers: string[] = []
+function findBlockers(userData: UserData): Blocker[] {
+  const blockers: Blocker[] = []
 
   const hasAnyIncome =
     userData.paycheck.grossAmount > 0 ||
     userData.paycheck.netAmount > 0 ||
     userData.incomes.length > 0
   if (!hasAnyIncome) {
-    blockers.push('No income entered. Add your paycheck or other income on the Paycheck or Incomes tab.')
+    blockers.push({
+      code: 'no_income',
+      message: 'Add your paycheck — or other income on the Incomes tab.',
+      tab: 'paycheck',
+    })
   }
 
   if (userData.expenses.length === 0) {
-    blockers.push('No expenses entered. Add at least your essential monthly expenses on the Expenses tab.')
+    blockers.push({
+      code: 'no_expenses',
+      message: 'Add at least your essential monthly expenses.',
+      tab: 'expenses',
+    })
   }
 
   const hasCashAssets = userData.assets.some((a) => a.category === 'cash' && a.value > 0)
   const hasEFDesignated = userData.assets.some((a) => a.isEmergencyFund)
   if (hasCashAssets && !hasEFDesignated) {
-    blockers.push(
-      'You have cash assets but none are marked as your emergency fund. Toggle "is emergency fund" on the Assets tab so the engine knows what to count.',
-    )
+    blockers.push({
+      code: 'no_ef_designation',
+      message: 'Mark which cash asset is your emergency fund.',
+      tab: 'assets',
+    })
   }
 
   return blockers
 }
 
-function buildBlockedMilestone(blockers: string[]): Milestone {
+function buildBlockedMilestone(blockers: Blocker[]): Milestone {
   return {
     id: 'complete_budget',
     phase: 1,
     status: 'blocked',
     title: 'Complete your budget',
-    description: blockers.join(' '),
+    description: 'Add the items below to start getting recommendations.',
     rationale:
       'The flowchart begins with a complete budget — income, essential expenses, and a designated emergency fund. Without these, downstream recommendations would be computed against zeros and produce misleading guidance.',
     data: { blockers },
