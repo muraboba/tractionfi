@@ -1,8 +1,11 @@
 import { getAuth } from '@/server/auth'
 
-async function handler(request: Request) {
+export async function GET(request: Request) {
   const auth = await getAuth()
   return auth.handler(request)
 }
 
-export { handler as GET, handler as POST }
+export async function POST(request: Request) {
+  const auth = await getAuth()
+  return auth.handler(request)
+}

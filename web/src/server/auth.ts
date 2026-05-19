@@ -1,6 +1,9 @@
 import { betterAuth } from 'better-auth'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { Resend } from 'resend'
+import { dash } from '@better-auth/infra'
+import { Kysely } from 'kysely'
+import { D1Dialect } from 'kysely-d1'
 
 export interface Session {
   user: {
@@ -13,15 +16,20 @@ export interface Session {
 type AuthEnv = CloudflareEnv & {
   BETTER_AUTH_SECRET: string
   RESEND_API_KEY: string
+  BETTER_AUTH_API_KEY: string
 }
 
 let authInstance: ReturnType<typeof buildAuth> | null = null
 
 function buildAuth(env: AuthEnv) {
   const resend = new Resend(env.RESEND_API_KEY)
+  // Construct Kysely with a statically-imported D1 dialect to bypass
+  // @better-auth/kysely-adapter's dynamic import path (which chunks-loads
+  // its internal D1 dialect — fails at runtime in Cloudflare Workers).
+  const kysely = new Kysely({ dialect: new D1Dialect({ database: env.DB }) })
   return betterAuth({
     appName: 'TractionFI',
-    database: env.DB,
+    database: { db: kysely, type: 'sqlite' },
     secret: env.BETTER_AUTH_SECRET,
     trustedProxyHeaders: true,
     emailAndPassword: {
@@ -54,6 +62,7 @@ function buildAuth(env: AuthEnv) {
       expiresIn: 60 * 60 * 24 * 30,
       updateAge: 60 * 60 * 24,
     },
+    plugins: [dash({ apiKey: env.BETTER_AUTH_API_KEY })],
   })
 }
 
