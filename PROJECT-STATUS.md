@@ -13,11 +13,16 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## Current Phase
 
-**Design lockdown complete — ready to begin implementation.** PRD at v0.5, design spec written at [docs/superpowers/specs/2026-05-19-tractionfi-v1-migration-design.md](docs/superpowers/specs/2026-05-19-tractionfi-v1-migration-design.md), implementation plan written at [tasks/todo.md](tasks/todo.md) with 12 phases + ~80 bite-sized steps. Next session begins Phase 0 (repo prep) via subagent-driven execution.
+**Phase 3 — query layer + user_state API + blob migrator.** Phases 0–2 complete on `feat/v1-migration`. Engine at 0.2.0. Cloudflare Workers + D1 wired. Next: implement `engine/src/migrations/`, `web/src/server/queries/user_state.ts`, and `web/src/app/api/user_state/route.ts`. Set RESEND_API_KEY + BETTER_AUTH_SECRET secrets before starting Phase 4.
 
 ## Last Changed
 
-- 2026-05-18: Phase 2 follow-up — consolidated to solo-minimal D1 model. Dropped tractionfi-dev and tractionfi-staging cloud DBs; created tractionfi (database_id fff44e43-cb58-458e-b8e0-3dbd990f2579) as the single production DB. Local dev uses Wrangler's --local mode against the same name. No [env.staging] stanza in wrangler.toml. Migration 0001_initial.sql applied to both remote and local.
+- 2026-05-18 (session D) — **Phases 0–2 implemented** (subagent-driven on `feat/v1-migration`):
+  - **Phase 0:** Committed scaffolding (PRD v0.5, design spec, implementation plan) to `main`; created `feat/v1-migration` branch.
+  - **Phase 1:** Engine 0.2.0 — replaced `blockers: string[]` with `Blocker[]` (`code`, `message`, `tab`). `BlockerTab` union is 3 members (dropped dead `'incomes'`). New `engine/tests/blockers.test.ts` covers tab mapping + array-identity invariant. 52 tests pass.
+  - **Phase 2:** Installed `@opennextjs/cloudflare` + Wrangler + Better Auth. Switched deploy target from archived `@cloudflare/next-on-pages` (static export) to `@opennextjs/cloudflare` (Workers + Assets). Dropped `output: "export"` from `next.config.ts`. Created single cloud D1 `tractionfi` (fff44e43-cb58-458e-b8e0-3dbd990f2579) — solo-minimal model, no staging concept. Migration `0001_initial.sql` applied to local and remote. `wrangler.toml` has no env stanzas.
+  - **Architecture decision:** deploy target is Cloudflare Workers (not Pages). Custom domain + D1 + secrets all work identically; just a different Cloudflare product surface.
+  - **Deferred to Phase 4 start:** Set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` secrets via `wrangler secret put`.
 - 2026-05-18 (session C) — **Tier 2 UX gaps resolved** (one-at-a-time lockdown with self-review on each item):
   - **Tier 2 #1 email-verification UX:** locked Option A (full lockout `/verify-pending` screen, middleware-enforced gate, `/verify?token` flow). No data entry possible while unverified — eliminates buffer-flush / cross-device sync edge cases.
   - **Tier 2 #2 empty-state UX:** locked — newly-verified user lands on Recommendations tab; empty-state IS the complete-budget banner. Card has deep-link CTAs per blocker. No first-run flag, no welcome modal, no tour.
@@ -32,7 +37,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## In Progress
 
-Phase 3 — query layer + API routes. Phase 2 complete (D1 provisioned, migration applied to local + remote; solo-minimal model).
+Phase 3 — query layer + user_state API + blob migrator. Start here next session.
 
 ## Implemented But Not Deployed
 
@@ -41,16 +46,22 @@ _Nothing yet._
 ## Implementation Notes
 
 - 2026-05-18: Phase 2 — Better Auth schema generation: hand-transcribed because `@better-auth/cli generate` failed with `dialect.createDriver is not a function` — the SQLite dialect stub requires a live driver instance, not just `{ dialect: "sqlite", type: "sqlite" }`. Schema was verified directly against `@better-auth/core/dist/db/get-tables.mjs` and `better-auth/dist/db/get-migration.mjs`. Table names are singular (`user`, `session`, `account`, `verification`). Date fields use SQLite `DATE` type; booleans use `INTEGER`. Indexes on `session.userId`, `account.userId`, `verification.identifier` match what the CLI would have emitted.
-- 2026-05-18: Phase 2 — `db:migrate:staging` script requires `--env staging` flag (not just `--remote`) because `tractionfi-staging` is declared under `[env.staging]` in `wrangler.toml`. Updated script accordingly.
-- 2026-05-18: Phase 2 — Switched deploy target from Cloudflare Pages (`@cloudflare/next-on-pages`, archived Sept 2025) to Cloudflare Workers + Assets (`@opennextjs/cloudflare`). Dropped `output: "export"` from `next.config.ts` to enable route handlers and Better Auth server-side.
+- 2026-05-18: Phase 2 — `@cloudflare/next-on-pages` was archived Sept 2025. Switched to `@opennextjs/cloudflare` (Workers + Assets). Deploy target is now Cloudflare Workers, not Pages. Functionally equivalent — custom domain, D1, secrets work identically.
+- 2026-05-18: Phase 2 — Solo-minimal D1 model: one cloud DB `tractionfi` for production; local dev uses `--local` mode (Wrangler local SQLite shadow). No staging DB. Phase 10 cutover = DNS flip only.
+- 2026-05-18: Phase 2 — Better Auth schema hand-transcribed (CLI requires live SQLite driver, not just dialect stub). Verified against `@better-auth/core/dist/db/get-tables.mjs`. Table names are singular (`user`, not `users`). Date fields: SQLite `DATE` type. Booleans: `INTEGER`.
+- 2026-05-18: Phase 4 note — Better Auth + OpenNext requires `async authBuilder()` singleton pattern. `getCloudflareContext()` is only available at request time; auth instance must be initialized inside a lazy singleton, not at module top-level. See `better-auth-cloudflare` OpenNext example.
+- 2026-05-18: Phase 3 note — `user_state` API route handler uses `getCloudflareContext().env.DB` (not `process.env.DB`). No `export const runtime = 'edge'` on route files — Node.js compat mode is correct runtime.
 
 ## Open Items
 
-- [x] **Phase 0 of `tasks/todo.md` — repo prep.** Done — `feat/v1-migration` branch active.
-- [x] **Phase 1 — engine 0.2.0 bump** (structured `Blocker[]`). Done (commit f19cca7).
-- [x] **Phase 2 — Cloudflare env + D1 provisioning.** Done — two D1 DBs, wrangler.toml, OpenNext config, initial migration applied to local + staging.
-- [ ] **Phases 3–7** — query layer, Better Auth + verify, dashboard rebuild, landing/settings, observability.
-- [ ] **Phase 8** — E2E verification on staging (14-step manual checklist).
+- [x] **Phase 0** — scaffolding committed to `main`, `feat/v1-migration` branch active.
+- [x] **Phase 1** — engine 0.2.0 with structured `Blocker[]` (commit `a5ed389`).
+- [x] **Phase 2** — Cloudflare Workers + D1 wired. Single `tractionfi` DB. OpenNext adapter. Initial migration applied (commits `c998548`, `c9a9947`).
+- [ ] **Phase 3** — query layer + user_state GET/PUT API + blob migrator. **Start here.**
+- [ ] **Phase 4** — Better Auth + email verify flow. Before starting: set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`).
+- [ ] **Phases 5–7** — dashboard rebuild, landing/settings, observability.
+- [ ] **Phase 8** — E2E verification (14-step manual checklist).
 - [ ] **Phase 9** — `/ui-ux-pro-max` design system pass.
 - [ ] **Phase 10–11** — production cutover + cleanup of v0 Worker + KV `USER_DATA`.
-- [ ] Verify Cloudflare Workers Alerts thresholding granularity on the Pages-Functions tier (Phase 7 step 7.5 — fallback is Axiom free tier).
+- [ ] **Spec drift:** design spec §2.5 still lists `BlockerTab` as 4-member union (includes `'incomes'`); code is now 3-member. Reconcile in Phase 12 cleanup.
+- [ ] **Verify Workers Alerts thresholding** on Workers tier (Phase 7 step 7.5 — Axiom free tier is fallback).
