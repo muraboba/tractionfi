@@ -13,10 +13,17 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## Current Phase
 
-**Phase 3 — query layer + user_state API + blob migrator.** Phases 0–2 complete on `feat/v1-migration`. Engine at 0.2.0. Cloudflare Workers + D1 wired. Next: implement `engine/src/migrations/`, `web/src/server/queries/user_state.ts`, and `web/src/app/api/user_state/route.ts`. Set RESEND_API_KEY + BETTER_AUTH_SECRET secrets before starting Phase 4.
+**Phase 4 — Better Auth wiring + email-verification flow.** Phases 0–3 complete on `feat/v1-migration`. Engine at 0.2.0. D1 query layer + `user_state` GET/PUT API + blob migrator landed (commit `e80f5bb`). Auth stub returns null until Phase 4 wires Better Auth. **Before starting Phase 4:** set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`).
 
 ## Last Changed
 
+- 2026-05-18 (session E) — **Phase 3 implemented** (subagent-driven, two-stage review on `feat/v1-migration`, commit `e80f5bb`):
+  - **engine/migrations/**: pure-TS blob migrator at `engine/src/migrations/` (`v1.ts` + `index.ts`). `CURRENT_SCHEMA_VERSION = 1`; identity migrator for v1 blobs (paycheck + 4 entry arrays + `settings.skippedMilestones`). `migrateBlob(raw)` returns `{ data, migratedFrom }`; passthrough on current-version blobs preserves reference identity by contract (callers can skip JSON.stringify when `migratedFrom === null`). Throws on unknown schema versions. Exported from `@tractionfi/engine`. 4 new tests in `engine/tests/migrations.test.ts` (56 engine tests total).
+  - **web/server/queries/user_state.ts**: `getOrCreateUserState` INSERTs an empty v1 row on first read; on existing rows runs `migrateBlob` and writes back via the spec §2.4 optimistic-concurrency UPDATE before returning. Single bounded re-read on write-back race; throws if still stale (no unbounded recursion). `updateUserState` uses the same `UPDATE … WHERE user_id = ? AND version = ?` pattern; on `meta.changes === 0` returns 409-style `{ ok: false, conflict }` via plain SELECT (no INSERT side-effect on concurrent-delete races).
+  - **web/app/api/user_state/route.ts**: GET + PUT handlers. NO `runtime = 'edge'` declaration — runs under Node.js compat per OpenNext. D1 binding accessed via `getCloudflareContext({ async: true }).env.DB`. Both handlers 401 when session is null or unverified.
+  - **web/server/auth.ts**: minimal stub returning `null` until Phase 4. Has a TODO breadcrumb flagging the shape mismatch with Better Auth (`emailVerified: INTEGER` vs `emailVerifiedAt: string | null`).
+  - **Vitest pool**: added `vitest@^4.1.6` + `@cloudflare/vitest-pool-workers@^0.16.6` to `web/`. Config is `.mts` (pool is ESM-only). Real Miniflare D1 with `applyD1Migrations` from `tests/setup.ts` via `vitest.provide('D1_MIGRATIONS', …)`. Test file seeds stub `user` rows to satisfy the FK constraint. 4 web tests cover: empty row on first read, idempotent re-read, version bump on update, 409 on stale expectedVersion.
+  - **dashboard/page.tsx**: one-line surgical fix to render the engine 0.2.0 `Blocker[]` shape (`key={b.code}` / `{b.message}`). Pre-existing breakage from commit `a5ed389`.
 - 2026-05-18 (session D) — **Phases 0–2 implemented** (subagent-driven on `feat/v1-migration`):
   - **Phase 0:** Committed scaffolding (PRD v0.5, design spec, implementation plan) to `main`; created `feat/v1-migration` branch.
   - **Phase 1:** Engine 0.2.0 — replaced `blockers: string[]` with `Blocker[]` (`code`, `message`, `tab`). `BlockerTab` union is 3 members (dropped dead `'incomes'`). New `engine/tests/blockers.test.ts` covers tab mapping + array-identity invariant. 52 tests pass.
@@ -37,7 +44,7 @@ Personal finance decision engine + web app implementing the US Personal Income S
 
 ## In Progress
 
-Phase 3 — query layer + user_state API + blob migrator. Start here next session.
+Phase 4 — Better Auth wiring + email-verification flow. Start here next session. Before kicking off Phase 4 work, set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` from `web/`.
 
 ## Implemented But Not Deployed
 
@@ -45,6 +52,9 @@ _Nothing yet._
 
 ## Implementation Notes
 
+- 2026-05-18: Phase 3 — `@cloudflare/vitest-pool-workers@^0.16.6` requires `vitest@^4.1.0` peer; web/ runs vitest 4, engine/ stays on vitest 2. The pool is ESM-only — config must be `vitest.config.mts`. The `cloudflareTest` Vite plugin (NOT `defineWorkersConfig`) is the supported API in this version; use `defineConfig({ plugins: [cloudflareTest({ main, wrangler })] })`. globalSetup receives a `Vitest` instance from `vitest/node` and calls `vitest.provide('D1_MIGRATIONS', migrations)` so each test can `inject('D1_MIGRATIONS')` and pass to `applyD1Migrations(env.DB, migrations)`. Tests must seed stub `user` rows because `user_state.user_id` FKs to `user(id)`.
+- 2026-05-18: Phase 3 — `user_state` SQL uses CURRENT_TIMESTAMP at INSERT/UPDATE time. The `created_at` and `updated_at` columns are TEXT (not DATE) per `0001_initial.sql`, which differs from Better Auth's DATE columns. Spec §2.1 specified TEXT for our application table; intentional.
+- 2026-05-18: Phase 3 — `migrateBlob` reference-identity contract: when `migratedFrom === null`, the returned `data` is the SAME REFERENCE as the input. This is contractual, not incidental — do NOT wrap a future migrator in `structuredClone` for "safety" without auditing every caller for skipped serialization paths.
 - 2026-05-18: Phase 2 — Better Auth schema generation: hand-transcribed because `@better-auth/cli generate` failed with `dialect.createDriver is not a function` — the SQLite dialect stub requires a live driver instance, not just `{ dialect: "sqlite", type: "sqlite" }`. Schema was verified directly against `@better-auth/core/dist/db/get-tables.mjs` and `better-auth/dist/db/get-migration.mjs`. Table names are singular (`user`, `session`, `account`, `verification`). Date fields use SQLite `DATE` type; booleans use `INTEGER`. Indexes on `session.userId`, `account.userId`, `verification.identifier` match what the CLI would have emitted.
 - 2026-05-18: Phase 2 — `@cloudflare/next-on-pages` was archived Sept 2025. Switched to `@opennextjs/cloudflare` (Workers + Assets). Deploy target is now Cloudflare Workers, not Pages. Functionally equivalent — custom domain, D1, secrets work identically.
 - 2026-05-18: Phase 2 — Solo-minimal D1 model: one cloud DB `tractionfi` for production; local dev uses `--local` mode (Wrangler local SQLite shadow). No staging DB. Phase 10 cutover = DNS flip only.
@@ -57,8 +67,8 @@ _Nothing yet._
 - [x] **Phase 0** — scaffolding committed to `main`, `feat/v1-migration` branch active.
 - [x] **Phase 1** — engine 0.2.0 with structured `Blocker[]` (commit `a5ed389`).
 - [x] **Phase 2** — Cloudflare Workers + D1 wired. Single `tractionfi` DB. OpenNext adapter. Initial migration applied (commits `c998548`, `c9a9947`).
-- [ ] **Phase 3** — query layer + user_state GET/PUT API + blob migrator. **Start here.**
-- [ ] **Phase 4** — Better Auth + email verify flow. Before starting: set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`).
+- [x] **Phase 3** — query layer + user_state GET/PUT API + blob migrator (commit `e80f5bb`). 56 engine + 4 web tests; clean typechecks.
+- [ ] **Phase 4** — Better Auth + email verify flow. **Start here.** Before starting: set `RESEND_API_KEY` + `BETTER_AUTH_SECRET` via `wrangler secret put` (from `web/`). Resolve the auth-stub shape mismatch (`emailVerified: INTEGER` vs `emailVerifiedAt: string | null`) — see TODO in `web/src/server/auth.ts`.
 - [ ] **Phases 5–7** — dashboard rebuild, landing/settings, observability.
 - [ ] **Phase 8** — E2E verification (14-step manual checklist).
 - [ ] **Phase 9** — `/ui-ux-pro-max` design system pass.
