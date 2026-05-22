@@ -15,6 +15,12 @@ function formatUSD(value: number): string {
   }).format(value)
 }
 
+// Input-driven metrics where 0 means "not entered yet" — render '—' instead of $0.
+// monthlyCashFlow and netWorth keep $0 because zero is a meaningful state.
+function formatMaybeEmpty(value: number): string {
+  return value === 0 ? '—' : formatUSD(value)
+}
+
 export function SummarySidebar({ metrics }: Props) {
   const cashFlowTone =
     metrics.monthlyCashFlow > 0
@@ -28,16 +34,16 @@ export function SummarySidebar({ metrics }: Props) {
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Summary
       </h2>
-      <Row label="Monthly income" value={formatUSD(metrics.monthlyIncome)} />
-      <Row label="Monthly expenses" value={formatUSD(metrics.monthlyExpenses)} />
+      <Row label="Monthly income" value={formatMaybeEmpty(metrics.monthlyIncome)} />
+      <Row label="Monthly expenses" value={formatMaybeEmpty(metrics.monthlyExpenses)} />
       <Row
         label="Monthly cash flow"
         value={formatUSD(metrics.monthlyCashFlow)}
         valueClass={cashFlowTone}
       />
       <Row label="Net worth" value={formatUSD(metrics.netWorth)} />
-      <Row label="Emergency fund" value={formatUSD(metrics.emergencyFundBalance)} />
-      <Row label="Annual gross" value={formatUSD(metrics.annualGrossIncome)} />
+      <Row label="Emergency fund" value={formatMaybeEmpty(metrics.emergencyFundBalance)} />
+      <Row label="Annual gross" value={formatMaybeEmpty(metrics.annualGrossIncome)} />
     </div>
   )
 }
