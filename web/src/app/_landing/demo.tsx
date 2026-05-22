@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, type ChangeEvent } from "react";
 
@@ -74,16 +74,16 @@ export default function Demo() {
     <section id="demo" className="border-t border-border py-24">
       <div className="mx-auto max-w-[1024px] px-6">
         <div className="mb-12 max-w-[640px]">
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted">Try it</div>
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">Try it</div>
           <h2
             className="mt-4 font-semibold tracking-[-0.02em] text-balance"
             style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1 }}
           >
             Move the dials.
             <br />
-            <span className="text-muted">Watch the priority change.</span>
+            <span className="text-muted-foreground">Watch the priority change.</span>
           </h2>
-          <p className="mt-4 max-w-[55ch] text-[16px] leading-[1.6] text-muted">
+          <p className="mt-4 max-w-[55ch] text-[16px] leading-[1.6] text-muted-foreground">
             Five inputs, eight phases, one answer. The card on the right updates in real time as
             you adjust the numbers, same engine that runs the full dashboard.
           </p>
@@ -161,7 +161,7 @@ function Slider({
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
-        <label className="text-[13px] text-muted">{label}</label>
+        <label className="text-[13px] text-muted-foreground">{label}</label>
         <span className="text-[15px] font-medium tabular-nums text-foreground">
           {fmtMoney(value)}
         </span>
@@ -176,7 +176,7 @@ function Slider({
         className="demo-slider w-full appearance-none rounded-full outline-none"
         style={{
           height: "4px",
-          background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, var(--surface-2) ${pct}%, var(--surface-2) 100%)`,
+          background: `linear-gradient(to right, var(--brand) 0%, var(--brand) ${pct}%, var(--surface-2) ${pct}%, var(--surface-2) 100%)`,
         }}
       />
     </div>
@@ -194,21 +194,21 @@ function Toggle({
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-4">
-      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-[13px] text-muted-foreground">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={value}
         onClick={() => onChange(!value)}
         className={`relative h-[26px] w-11 rounded-full border p-0 transition-colors ${
-          value ? "border-accent bg-accent" : "border-border bg-surface-2"
+          value ? "border-brand bg-brand" : "border-border bg-surface-2"
         }`}
       >
         <span
           className="absolute top-0.5 h-[18px] w-[18px] rounded-full transition-[left]"
           style={{
             left: value ? "20px" : "2px",
-            background: value ? "var(--background)" : "var(--muted)",
+            background: value ? "var(--background)" : "var(--muted-foreground)",
           }}
         />
       </button>
@@ -222,7 +222,7 @@ function DemoResultCard({ result }: { result: DemoResult }) {
       <div className="mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.04em] text-muted-2">
         <span>engine.decide(inputs)</span>
         <span className="h-px flex-1 bg-border" />
-        <span className="text-accent">→ phase {String(result.phase).padStart(2, "0")}</span>
+        <span className="text-brand">â†’ phase {String(result.phase).padStart(2, "0")}</span>
       </div>
 
       <article

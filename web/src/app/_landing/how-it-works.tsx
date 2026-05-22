@@ -1,4 +1,4 @@
-import { ListOrdered, PencilLine, Target } from "./icons";
+﻿import { ListOrdered, PencilLine, Target } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
 type Step = {
@@ -38,7 +38,7 @@ export default function HowItWorks() {
     <section id="how" className="border-t border-border py-24">
       <div className="mx-auto max-w-[1024px] px-6">
         <div className="mb-16 max-w-[640px]">
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted">
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             How it works
           </div>
           <h2
@@ -47,7 +47,7 @@ export default function HowItWorks() {
           >
             Three small inputs.
             <br />
-            <span className="text-muted">One decisive answer.</span>
+            <span className="text-muted-foreground">One decisive answer.</span>
           </h2>
         </div>
 
@@ -66,13 +66,13 @@ function StepCard({ n, eyebrow, title, body, Icon }: Step) {
     <article className="group relative flex min-h-[260px] flex-col rounded-lg border border-border bg-surface px-6 py-7 transition-colors hover:border-border-strong hover:bg-surface-2">
       <div className="mb-8 flex items-center justify-between">
         <span className="font-mono text-xs tracking-[0.06em] text-muted-2">{n}</span>
-        <Icon size={18} className="text-accent" />
+        <Icon size={18} className="text-brand" />
       </div>
       <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-2">{eyebrow}</div>
       <h3 className="mt-2.5 text-[20px] font-semibold leading-[1.25] tracking-[-0.01em] text-foreground">
         {title}
       </h3>
-      <p className="mt-2.5 text-sm leading-[1.55] text-muted">{body}</p>
+      <p className="mt-2.5 text-sm leading-[1.55] text-muted-foreground">{body}</p>
     </article>
   );
 }

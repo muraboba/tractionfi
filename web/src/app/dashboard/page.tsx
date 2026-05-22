@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -11,7 +11,7 @@ import {
 } from "@tractionfi/engine";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-// Hardcoded sample data — proves end-to-end engine integration.
+// Hardcoded sample data â€” proves end-to-end engine integration.
 // This will be replaced by D1-backed user data once auth is wired up.
 const SAMPLE_USER_DATA: UserData = {
   paycheck: {
@@ -88,7 +88,7 @@ function statusBadge(status: MilestoneStatus): { label: string; className: strin
     case "not_applicable":
       return {
         label: "Not applicable",
-        className: "bg-surface-2 text-muted ring-1 ring-border",
+        className: "bg-surface-2 text-muted-foreground ring-1 ring-border",
       };
     case "skipped":
       return {
@@ -125,12 +125,12 @@ export default function DashboardPage() {
     <div className="mx-auto w-full max-w-5xl px-6 py-10">
       <header className="flex items-center justify-between border-b border-border pb-6">
         <div>
-          <Link href="/" className="text-sm text-muted hover:text-accent transition">
-            ← back to landing
+          <Link href="/" className="text-sm text-muted-foreground hover:text-brand transition">
+            â† back to landing
           </Link>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sample dashboard</h1>
-          <p className="mt-1 text-sm text-muted">
-            Engine v{ENGINE_VERSION} · tax year {result.taxYear} · sample data
+          <p className="mt-1 text-sm text-muted-foreground">
+            Engine v{ENGINE_VERSION} Â· tax year {result.taxYear} Â· sample data
             (no auth yet)
           </p>
         </div>
@@ -227,7 +227,7 @@ function Metric({
         : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-surface p-4 transition hover:border-border-strong">
-      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={`mt-1 text-2xl font-semibold tracking-tight ${toneClass}`}>{value}</p>
     </div>
   );
@@ -240,15 +240,15 @@ function MilestoneRow({ milestone, index }: { milestone: Milestone; index: numbe
     <li
       className={`flex items-start gap-4 rounded-xl border p-4 transition ${
         isActive
-          ? "border-accent/40 bg-surface shadow-[0_0_0_1px_var(--accent-glow)]"
+          ? "border-brand/40 bg-surface shadow-[0_0_0_1px_var(--brand-glow)]"
           : "border-border bg-surface hover:border-border-strong"
       }`}
     >
       <span
         className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium ${
           isActive
-            ? "bg-accent text-accent-foreground"
-            : "bg-surface-2 text-muted"
+            ? "bg-brand text-brand-foreground"
+            : "bg-surface-2 text-muted-foreground"
         }`}
       >
         {index}
@@ -262,7 +262,7 @@ function MilestoneRow({ milestone, index }: { milestone: Milestone; index: numbe
             {badge.label}
           </span>
         </div>
-        <p className="mt-1 text-sm text-muted">{milestone.description}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{milestone.description}</p>
       </div>
     </li>
   );

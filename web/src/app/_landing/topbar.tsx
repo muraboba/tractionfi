@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -41,7 +41,7 @@ export default function TopBar() {
             <a
               key={item.href}
               href={item.href}
-              className="text-sm text-muted transition-colors hover:text-foreground"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {item.label}
             </a>
@@ -52,7 +52,7 @@ export default function TopBar() {
           <ThemeToggle />
           <a
             href="#preview"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground shadow-[0_0_24px_var(--accent-glow)] transition-colors hover:bg-accent-hover"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-brand-foreground shadow-[0_0_24px_var(--brand-glow)] transition-colors hover:bg-brand-hover"
           >
             See a sample
             <ArrowRight size={14} />

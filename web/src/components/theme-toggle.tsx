@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef } from "react";
 import { useTheme, type Theme } from "@/lib/theme";
@@ -79,10 +79,10 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
         aria-label={label}
         title={label}
         onClick={() => setPreference(next)}
-        className={`inline-flex h-11 w-11 items-center justify-center rounded-lg border border-transparent text-muted transition-[color,background-color,border-color,transform,opacity] duration-150 hover:border-border-strong hover:bg-surface-2 hover:text-foreground motion-reduce:transition-none ${className}`}
+        className={`inline-flex h-11 w-11 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-[color,background-color,border-color,transform,opacity] duration-150 hover:border-border-strong hover:bg-surface-2 hover:text-foreground motion-reduce:transition-none ${className}`}
       >
         {/* Render the icon that represents the ACTION (what you'll get on click).
-            Dark theme active → show Sun (click → light). Light → show Moon. */}
+            Dark theme active â†’ show Sun (click â†’ light). Light â†’ show Moon. */}
         {mounted && theme === "dark" ? <SunIcon /> : <MoonIcon />}
       </button>
       <span

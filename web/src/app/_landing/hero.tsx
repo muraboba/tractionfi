@@ -1,4 +1,4 @@
-import { PRIORITIES } from "./data";
+﻿import { PRIORITIES } from "./data";
 import { ArrowRight, ChevronDown, Lock } from "./icons";
 
 const PRIMARY = PRIORITIES[0];
@@ -11,13 +11,13 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-0"
         style={{
           background:
-            "radial-gradient(900px 500px at 85% -10%, var(--accent-glow), transparent 60%)",
+            "radial-gradient(900px 500px at 85% -10%, var(--brand-glow), transparent 60%)",
         }}
       />
       <div className="relative z-10 mx-auto grid max-w-[1024px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_8px_var(--brand)]" />
             Personal finance, decided
           </div>
 
@@ -27,10 +27,10 @@ export default function Hero() {
           >
             One next step.
             <br />
-            <span className="text-muted">Not a hundred opinions.</span>
+            <span className="text-muted-foreground">Not a hundred opinions.</span>
           </h1>
 
-          <p className="mt-6 max-w-[48ch] text-pretty text-[18px] leading-[1.55] text-muted">
+          <p className="mt-6 max-w-[48ch] text-pretty text-[18px] leading-[1.55] text-muted-foreground">
             Tell us about your money, income, expenses, savings, debts, and we&apos;ll tell you the
             single most important thing to do next with your dollars. No guesswork, no advice that
             doesn&apos;t fit your situation.
@@ -39,14 +39,14 @@ export default function Hero() {
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <a
               href="#preview"
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-[22px] py-3.5 text-[15px] font-medium text-accent-foreground shadow-[0_0_32px_rgba(139,124,255,0.22)] transition-colors hover:bg-accent-hover"
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-brand px-[22px] py-3.5 text-[15px] font-medium text-brand-foreground shadow-[0_0_32px_rgba(139,124,255,0.22)] transition-colors hover:bg-brand-hover"
             >
               See a sample dashboard
               <ArrowRight size={16} />
             </a>
             <a
               href="#framework"
-              className="inline-flex items-center gap-1.5 px-3.5 py-3 text-sm text-muted transition-colors hover:text-accent"
+              className="inline-flex items-center gap-1.5 px-3.5 py-3 text-sm text-muted-foreground transition-colors hover:text-brand"
             >
               See the framework
               <ChevronDown size={14} />
@@ -55,13 +55,13 @@ export default function Hero() {
 
           <div className="mt-8 flex items-center gap-3 text-[13px] text-muted-2">
             <Lock size={13} />
-            <span>Free during beta · auth and account creation coming soon</span>
+            <span>Free during beta Â· auth and account creation coming soon</span>
           </div>
         </div>
 
         <div className="relative flex justify-end">
           <span className="absolute -top-8 left-2 font-mono text-[11px] tracking-[0.04em] text-muted-2">
-            sample · dashboard.priority
+            sample Â· dashboard.priority
           </span>
 
           <article className="relative w-full max-w-[440px] rounded-2xl bg-priority-bg p-7 shadow-[var(--priority-shadow)] outline outline-1 outline-[rgba(194,65,12,0.15)] -outline-offset-1">
@@ -107,10 +107,10 @@ function DimmedNext({ rank, title }: { rank: number; title: string }) {
       className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3"
       style={{ opacity: 0.55 - (rank - 2) * 0.15 }}
     >
-      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-surface-2 text-xs font-medium tabular-nums text-muted">
+      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-surface-2 text-xs font-medium tabular-nums text-muted-foreground">
         {rank}
       </span>
-      <span className="text-sm text-muted">{title}</span>
+      <span className="text-sm text-muted-foreground">{title}</span>
     </div>
   );
 }

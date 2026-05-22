@@ -1,4 +1,4 @@
-import { BrandLockup } from "@/components/brand-lockup";
+﻿import { BrandLockup } from "@/components/brand-lockup";
 import { ArrowRight } from "./icons";
 
 export default function Footer() {
@@ -19,12 +19,12 @@ export default function Footer() {
           <div className="flex flex-col items-start gap-2.5">
             <a
               href="#preview"
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-[22px] py-3.5 text-[15px] font-medium text-accent-foreground shadow-[0_0_32px_rgba(139,124,255,0.22)] transition-colors hover:bg-accent-hover"
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-brand px-[22px] py-3.5 text-[15px] font-medium text-brand-foreground shadow-[0_0_32px_rgba(139,124,255,0.22)] transition-colors hover:bg-brand-hover"
             >
               See a sample dashboard
               <ArrowRight size={16} />
             </a>
-            <span className="text-xs text-muted-2">Free during beta · no account required</span>
+            <span className="text-xs text-muted-2">Free during beta Â· no account required</span>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export default function Footer() {
 
         <hr className="mt-12 h-px border-0 bg-border" />
         <div className="mt-5 flex items-center justify-between text-xs text-muted-2">
-          <span>© {year} TractionFI. Personal finance, decided.</span>
+          <span>Â© {year} TractionFI. Personal finance, decided.</span>
           <span className="font-mono">v0.4.2-beta</span>
         </div>
       </div>
@@ -82,7 +82,7 @@ function FooterColumn({
           <li key={l.label}>
             <a
               href={l.href}
-              className="text-sm text-muted transition-colors hover:text-accent hover:underline"
+              className="text-sm text-muted-foreground transition-colors hover:text-brand hover:underline"
             >
               {l.label}
             </a>

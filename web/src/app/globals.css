@@ -1,4 +1,10 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* shadcn's `dark:` variant — fires when the root is not explicitly light.
+   Default :root is dark; [data-theme="light"] overrides to light. */
+@custom-variant dark (&:where(:root:not([data-theme="light"]) *, :root:not([data-theme="light"])));
 
 :root {
   /* Dark canvas — near-black with a faint purple undertone */
@@ -6,16 +12,17 @@
   --surface: #13131c;
   --surface-2: #1c1c28;
   --foreground: #ededf2;
-  --muted: #8a8aa0;
+  --muted-foreground: #8a8aa0;
   --muted-2: #5c5c70;
   --border: #262633;
   --border-strong: #32323f;
 
-  /* Electric purple accent (Linear / Superhuman lane) */
-  --accent: #8b7cff;
-  --accent-hover: #a195ff;
-  --accent-dim: #5d4dcc;
-  --accent-glow: rgba(139, 124, 255, 0.18);
+  /* Electric purple brand (Linear / Superhuman lane) */
+  --brand: #8b7cff;
+  --brand-hover: #a195ff;
+  --brand-dim: #5d4dcc;
+  --brand-glow: rgba(139, 124, 255, 0.18);
+  --brand-foreground: var(--background);
 
   /* Warm priority surface — the visual hero. Tokens DO NOT switch across themes. */
   --priority-bg: #fdf4e3;
@@ -34,8 +41,22 @@
   --info-fg: #93c5fd;
   --info-bg: #0c1e36;
 
-  /* On-accent text color (dark canvas: dark text on bright purple) */
-  --accent-foreground: var(--background);
+  /* shadcn semantic tokens — mapped to our palette */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger-fg);
+  --input: var(--border);
+  --ring: var(--brand);
+  --radius: 0.625rem;
 }
 
 [data-theme="light"] {
@@ -44,16 +65,17 @@
   --surface: #fdfdfe;
   --surface-2: #eef0f5;
   --foreground: #0f1019;
-  --muted: #5f627a;
+  --muted-foreground: #5f627a;
   --muted-2: #767889;
   --border: #e1e3ec;
   --border-strong: #c7cad6;
 
-  /* Accent rebalanced for AA on white surfaces */
-  --accent: #6b5bff;
-  --accent-hover: #5a4ae5;
-  --accent-dim: #4937b8;
-  --accent-glow: rgba(107, 91, 255, 0.12);
+  /* Brand rebalanced for AA on white surfaces */
+  --brand: #6b5bff;
+  --brand-hover: #5a4ae5;
+  --brand-dim: #4937b8;
+  --brand-glow: rgba(107, 91, 255, 0.12);
+  --brand-foreground: #fdfdfe;
 
   /* Priority card invariant — same tokens, softer shadow against bright canvas */
   --priority-shadow: 0 24px 64px -28px rgba(194, 65, 12, 0.28);
@@ -68,8 +90,21 @@
   --info-fg: #1d4ed8;
   --info-bg: #dbeafe;
 
-  /* On-accent text color (light canvas: white text on bright purple, contrast inverts) */
-  --accent-foreground: #fdfdfe;
+  /* shadcn semantic tokens — re-bound to light palette */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger-fg);
+  --input: var(--border);
+  --ring: var(--brand);
 }
 
 @theme inline {
@@ -77,20 +112,50 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-muted-2: var(--muted-2);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-dim: var(--accent-dim);
-  --color-accent-foreground: var(--accent-foreground);
+
+  /* Brand */
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-dim: var(--brand-dim);
+  --color-brand-foreground: var(--brand-foreground);
+
+  /* Priority */
   --color-priority-bg: var(--priority-bg);
   --color-priority-fg: var(--priority-fg);
   --color-priority-muted: var(--priority-muted);
   --color-priority-accent: var(--priority-accent);
+
+  /* shadcn semantic */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
 }
 
 body {
@@ -98,7 +163,7 @@ body {
   color: var(--foreground);
   /* subtle radial glow to lift the dark canvas */
   background-image:
-    radial-gradient(1200px 600px at 80% -10%, var(--accent-glow), transparent 60%),
+    radial-gradient(1200px 600px at 80% -10%, var(--brand-glow), transparent 60%),
     radial-gradient(900px 500px at -10% 110%, rgba(94, 77, 204, 0.10), transparent 60%);
   background-attachment: fixed;
 }
@@ -117,7 +182,7 @@ html {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -131,7 +196,7 @@ html {
   background: var(--foreground);
   border: 2px solid var(--background);
   cursor: pointer;
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 1px var(--brand);
 }
 .demo-slider::-moz-range-thumb {
   width: 16px;
@@ -140,5 +205,5 @@ html {
   background: var(--foreground);
   border: 2px solid var(--background);
   cursor: pointer;
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 1px var(--brand);
 }

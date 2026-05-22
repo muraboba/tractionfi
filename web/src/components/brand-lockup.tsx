@@ -1,5 +1,5 @@
-// Inline so the wordmark + logomark inherit theme tokens.
-// Visual parity with public/brand/lockup-horizontal.svg — keep in sync if the
+﻿// Inline so the wordmark + logomark inherit theme tokens.
+// Visual parity with public/brand/lockup-horizontal.svg â€” keep in sync if the
 // brand asset changes.
 export function BrandLockup({
   width = 144,
@@ -23,7 +23,7 @@ export function BrandLockup({
       <g>
         <circle cx="12" cy="48" r="4.5" fill="none" stroke="var(--foreground)" strokeWidth="2" opacity="0.45" />
         <circle cx="30" cy="32" r="5.5" fill="none" stroke="var(--foreground)" strokeWidth="2" opacity="0.70" />
-        <circle cx="50" cy="14" r="8.5" fill="var(--accent)" />
+        <circle cx="50" cy="14" r="8.5" fill="var(--brand)" />
       </g>
       <text
         x="84"
@@ -35,7 +35,7 @@ export function BrandLockup({
         fill="var(--foreground)"
       >
         Traction
-        <tspan fill="var(--accent)">FI</tspan>
+        <tspan fill="var(--brand)">FI</tspan>
       </text>
     </svg>
   );

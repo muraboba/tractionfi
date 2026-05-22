@@ -1,14 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { PRIORITIES, type Priority } from "./data";
 import { ArrowRight } from "./icons";
 
 const SCENARIOS = [
-  { id: "starter-ef", label: "No emergency fund", sub: "$48k income · $0 saved" },
-  { id: "401k-match", label: "Missing 401(k) match", sub: "$92k income · $4k saved" },
-  { id: "high-int-debt", label: "Carrying credit-card debt", sub: "$72k income · 19% APR" },
-  { id: "full-ef", label: "Topping up reserves", sub: "$110k income · 1mo runway" },
+  { id: "starter-ef", label: "No emergency fund", sub: "$48k income Â· $0 saved" },
+  { id: "401k-match", label: "Missing 401(k) match", sub: "$92k income Â· $4k saved" },
+  { id: "high-int-debt", label: "Carrying credit-card debt", sub: "$72k income Â· 19% APR" },
+  { id: "full-ef", label: "Topping up reserves", sub: "$110k income Â· 1mo runway" },
 ] as const;
 
 export default function PriorityPreview() {
@@ -19,8 +19,8 @@ export default function PriorityPreview() {
     <section id="preview" className="border-t border-border py-24">
       <div className="mx-auto grid max-w-[1024px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
         <div>
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted">
-            Sample · live preview
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Sample Â· live preview
           </div>
           <h2
             className="mt-4 font-semibold tracking-[-0.02em] text-balance"
@@ -28,7 +28,7 @@ export default function PriorityPreview() {
           >
             The card you&apos;ll open the app for.
           </h2>
-          <p className="mt-5 max-w-[44ch] text-[16px] leading-[1.6] text-muted">
+          <p className="mt-5 max-w-[44ch] text-[16px] leading-[1.6] text-muted-foreground">
             The Priority Card is the only warm surface in the product. It changes as your inputs
             change, but only one shows at a time. Pick a scenario to see what the engine returns.
           </p>
@@ -50,7 +50,7 @@ export default function PriorityPreview() {
                   >
                     <span
                       className={`relative inline-block h-[18px] w-[18px] rounded-full border-2 ${
-                        active ? "border-accent bg-accent" : "border-border-strong bg-transparent"
+                        active ? "border-brand bg-brand" : "border-border-strong bg-transparent"
                       }`}
                     >
                       {active && (
@@ -63,7 +63,7 @@ export default function PriorityPreview() {
                     </span>
                     <ArrowRight
                       size={14}
-                      className={active ? "text-accent" : "text-muted-2"}
+                      className={active ? "text-brand" : "text-muted-2"}
                     />
                   </button>
                 </li>
@@ -84,7 +84,7 @@ function PreviewPriorityCard({ priority }: { priority: Priority }) {
       <div className="absolute left-0 right-0 top-0 flex items-center gap-2 font-mono text-[11px] tracking-[0.04em] text-muted-2">
         <span className="flex-none">engine.decide()</span>
         <span className="h-px flex-1 bg-border" />
-        <span className="flex-none text-accent">1 priority returned</span>
+        <span className="flex-none text-brand">1 priority returned</span>
       </div>
 
       <article

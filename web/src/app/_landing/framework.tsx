@@ -1,4 +1,4 @@
-import { FRAMEWORK_PHASES, type FrameworkPhase } from "./data";
+﻿import { FRAMEWORK_PHASES, type FrameworkPhase } from "./data";
 import { Check } from "./icons";
 
 const CURRENT_PHASE = 3;
@@ -8,7 +8,7 @@ export default function Framework() {
     <section id="framework" className="border-t border-border py-24">
       <div className="mx-auto grid max-w-[1024px] grid-cols-1 items-start gap-12 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
         <div className="lg:sticky lg:top-24">
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted">
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             The framework
           </div>
           <h2
@@ -17,17 +17,17 @@ export default function Framework() {
           >
             Eight phases.
             <br />
-            <span className="text-muted">In strict order.</span>
+            <span className="text-muted-foreground">In strict order.</span>
           </h2>
-          <p className="mt-5 max-w-[44ch] text-[16px] leading-[1.6] text-muted">
+          <p className="mt-5 max-w-[44ch] text-[16px] leading-[1.6] text-muted-foreground">
             TractionFI runs your money through the US Personal Income Spending Flowchart, the same
             framework used by financial educators to teach the right order of priorities. The
             engine finds the earliest phase you haven&apos;t completed and stops there.
           </p>
 
-          <div className="mt-8 inline-flex items-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_6px_var(--accent)]" />
-            sample · earliest unfinished phase: {CURRENT_PHASE}
+          <div className="mt-8 inline-flex items-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_6px_var(--brand)]" />
+            sample Â· earliest unfinished phase: {CURRENT_PHASE}
           </div>
         </div>
 
@@ -52,7 +52,7 @@ function PhaseRow({ phase, state }: { phase: FrameworkPhase; state: PhaseState }
     done: {
       bg: "bg-surface",
       border: "border-border",
-      title: "text-muted line-through decoration-muted-2",
+      title: "text-muted-foreground line-through decoration-muted-2",
       detail: "text-muted-2",
       chip: "bg-surface-2 border-border text-[var(--success-fg)]",
     },
@@ -60,15 +60,15 @@ function PhaseRow({ phase, state }: { phase: FrameworkPhase; state: PhaseState }
       bg: "bg-surface-2",
       border: "border-[rgba(139,124,255,0.4)]",
       title: "text-foreground",
-      detail: "text-muted",
-      chip: "bg-accent border-accent text-accent-foreground",
+      detail: "text-muted-foreground",
+      chip: "bg-brand border-brand text-brand-foreground",
     },
     upcoming: {
       bg: "bg-surface",
       border: "border-border",
       title: "text-foreground",
-      detail: "text-muted",
-      chip: "bg-surface-2 border-border text-muted",
+      detail: "text-muted-foreground",
+      chip: "bg-surface-2 border-border text-muted-foreground",
     },
   }[state];
 
@@ -89,7 +89,7 @@ function PhaseRow({ phase, state }: { phase: FrameworkPhase; state: PhaseState }
             {phase.title}
           </h3>
           {state === "active" && (
-            <span className="rounded-full border border-[rgba(139,124,255,0.25)] bg-[rgba(139,124,255,0.10)] px-2 py-[3px] text-[11px] font-medium uppercase tracking-[0.18em] text-accent">
+            <span className="rounded-full border border-[rgba(139,124,255,0.25)] bg-[rgba(139,124,255,0.10)] px-2 py-[3px] text-[11px] font-medium uppercase tracking-[0.18em] text-brand">
               You are here
             </span>
           )}
