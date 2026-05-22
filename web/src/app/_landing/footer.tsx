@@ -1,4 +1,4 @@
-﻿import { BrandLockup } from "@/components/brand-lockup";
+import { BrandLockup } from "@/components/brand-lockup";
 import { ArrowRight } from "./icons";
 
 export default function Footer() {
@@ -24,7 +24,7 @@ export default function Footer() {
               See a sample dashboard
               <ArrowRight size={16} />
             </a>
-            <span className="text-xs text-muted-2">Free during beta Â· no account required</span>
+            <span className="text-xs text-muted-2">Free during beta · no account required</span>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export default function Footer() {
 
         <hr className="mt-12 h-px border-0 bg-border" />
         <div className="mt-5 flex items-center justify-between text-xs text-muted-2">
-          <span>Â© {year} TractionFI. Personal finance, decided.</span>
+          <span>© {year} TractionFI. Personal finance, decided.</span>
           <span className="font-mono">v0.4.2-beta</span>
         </div>
       </div>

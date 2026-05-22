@@ -1,5 +1,5 @@
-﻿// Inline so the wordmark + logomark inherit theme tokens.
-// Visual parity with public/brand/lockup-horizontal.svg â€” keep in sync if the
+// Inline so the wordmark + logomark inherit theme tokens.
+// Visual parity with public/brand/lockup-horizontal.svg — keep in sync if the
 // brand asset changes.
 export function BrandLockup({
   width = 144,

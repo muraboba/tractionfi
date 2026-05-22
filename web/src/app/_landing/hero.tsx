@@ -1,4 +1,4 @@
-﻿import { PRIORITIES } from "./data";
+import { PRIORITIES } from "./data";
 import { ArrowRight, ChevronDown, Lock } from "./icons";
 
 const PRIMARY = PRIORITIES[0];
@@ -55,13 +55,13 @@ export default function Hero() {
 
           <div className="mt-8 flex items-center gap-3 text-[13px] text-muted-2">
             <Lock size={13} />
-            <span>Free during beta Â· auth and account creation coming soon</span>
+            <span>Free during beta · auth and account creation coming soon</span>
           </div>
         </div>
 
         <div className="relative flex justify-end">
           <span className="absolute -top-8 left-2 font-mono text-[11px] tracking-[0.04em] text-muted-2">
-            sample Â· dashboard.priority
+            sample · dashboard.priority
           </span>
 
           <article className="relative w-full max-w-[440px] rounded-2xl bg-priority-bg p-7 shadow-[var(--priority-shadow)] outline outline-1 outline-[rgba(194,65,12,0.15)] -outline-offset-1">

@@ -1,14 +1,14 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { PRIORITIES, type Priority } from "./data";
 import { ArrowRight } from "./icons";
 
 const SCENARIOS = [
-  { id: "starter-ef", label: "No emergency fund", sub: "$48k income Â· $0 saved" },
-  { id: "401k-match", label: "Missing 401(k) match", sub: "$92k income Â· $4k saved" },
-  { id: "high-int-debt", label: "Carrying credit-card debt", sub: "$72k income Â· 19% APR" },
-  { id: "full-ef", label: "Topping up reserves", sub: "$110k income Â· 1mo runway" },
+  { id: "starter-ef", label: "No emergency fund", sub: "$48k income · $0 saved" },
+  { id: "401k-match", label: "Missing 401(k) match", sub: "$92k income · $4k saved" },
+  { id: "high-int-debt", label: "Carrying credit-card debt", sub: "$72k income · 19% APR" },
+  { id: "full-ef", label: "Topping up reserves", sub: "$110k income · 1mo runway" },
 ] as const;
 
 export default function PriorityPreview() {
@@ -20,7 +20,7 @@ export default function PriorityPreview() {
       <div className="mx-auto grid max-w-[1024px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Sample Â· live preview
+            Sample · live preview
           </div>
           <h2
             className="mt-4 font-semibold tracking-[-0.02em] text-balance"

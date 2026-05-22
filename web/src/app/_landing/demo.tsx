@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState, type ChangeEvent } from "react";
 
@@ -222,7 +222,7 @@ function DemoResultCard({ result }: { result: DemoResult }) {
       <div className="mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.04em] text-muted-2">
         <span>engine.decide(inputs)</span>
         <span className="h-px flex-1 bg-border" />
-        <span className="text-brand">â†’ phase {String(result.phase).padStart(2, "0")}</span>
+        <span className="text-brand">→ phase {String(result.phase).padStart(2, "0")}</span>
       </div>
 
       <article

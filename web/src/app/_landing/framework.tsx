@@ -1,4 +1,4 @@
-﻿import { FRAMEWORK_PHASES, type FrameworkPhase } from "./data";
+import { FRAMEWORK_PHASES, type FrameworkPhase } from "./data";
 import { Check } from "./icons";
 
 const CURRENT_PHASE = 3;
@@ -27,7 +27,7 @@ export default function Framework() {
 
           <div className="mt-8 inline-flex items-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_6px_var(--brand)]" />
-            sample Â· earliest unfinished phase: {CURRENT_PHASE}
+            sample · earliest unfinished phase: {CURRENT_PHASE}
           </div>
         </div>
 
