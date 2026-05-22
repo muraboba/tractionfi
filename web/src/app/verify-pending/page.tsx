@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -44,6 +45,9 @@ export default function VerifyPendingPage() {
 
   return (
     <main className="grid min-h-screen place-items-center p-6">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md w-full rounded-2xl border p-6 space-y-4">
         <h1 className="text-xl font-medium">Check your email</h1>
         <p className="text-sm text-muted-foreground">

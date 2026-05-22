@@ -1,19 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --accent: #1f2937;
+  /* Dark canvas — near-black with a faint purple undertone */
+  --background: #0a0a10;
+  --surface: #13131c;
+  --surface-2: #1c1c28;
+  --foreground: #ededf2;
+  --muted: #8a8aa0;
+  --muted-2: #5c5c70;
+  --border: #262633;
+  --border-strong: #32323f;
+
+  /* Electric purple accent (Linear / Superhuman lane) */
+  --accent: #8b7cff;
+  --accent-hover: #a195ff;
+  --accent-dim: #5d4dcc;
+  --accent-glow: rgba(139, 124, 255, 0.18);
+
+  /* Warm priority surface — the visual hero. Tokens DO NOT switch across themes. */
+  --priority-bg: #fdf4e3;
+  --priority-fg: #2a1a05;
+  --priority-muted: #6b4a1f;
+  --priority-accent: #c2410c;
+  --priority-shadow: 0 30px 80px -30px rgba(194, 65, 12, 0.4);
+
+  /* Status palette (tuned for dark canvas) */
+  --success-fg: #6ee7a7;
+  --success-bg: #0f2a1c;
+  --warning-fg: #fbbf24;
+  --warning-bg: #2a1f08;
+  --danger-fg: #fca5a5;
+  --danger-bg: #2a1010;
+  --info-fg: #93c5fd;
+  --info-bg: #0c1e36;
+
+  /* On-accent text color (dark canvas: dark text on bright purple) */
+  --accent-foreground: var(--background);
+}
+
+[data-theme="light"] {
+  /* Cool-clinical canvas (Stripe / Vercel anchor) */
+  --background: #f6f7fb;
+  --surface: #fdfdfe;
+  --surface-2: #eef0f5;
+  --foreground: #0f1019;
+  --muted: #5f627a;
+  --muted-2: #767889;
+  --border: #e1e3ec;
+  --border-strong: #c7cad6;
+
+  /* Accent rebalanced for AA on white surfaces */
+  --accent: #6b5bff;
+  --accent-hover: #5a4ae5;
+  --accent-dim: #4937b8;
+  --accent-glow: rgba(107, 91, 255, 0.12);
+
+  /* Priority card invariant — same tokens, softer shadow against bright canvas */
+  --priority-shadow: 0 24px 64px -28px rgba(194, 65, 12, 0.28);
+
+  /* Status (deep FG on pale BG, AA+) */
+  --success-fg: #15803d;
+  --success-bg: #dcfce7;
+  --warning-fg: #92400e;
+  --warning-bg: #fef3c7;
+  --danger-fg: #b91c1c;
+  --danger-bg: #fee2e2;
+  --info-fg: #1d4ed8;
+  --info-bg: #dbeafe;
+
+  /* On-accent text color (light canvas: white text on bright purple, contrast inverts) */
+  --accent-foreground: #fdfdfe;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-priority-bg: var(--priority-bg);
+  --color-priority-fg: var(--priority-fg);
+  --color-priority-muted: var(--priority-muted);
+  --color-priority-accent: var(--priority-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -21,4 +96,49 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  /* subtle radial glow to lift the dark canvas */
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, var(--accent-glow), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(94, 77, 204, 0.10), transparent 60%);
+  background-attachment: fixed;
+}
+
+[data-theme="light"] body {
+  /* Light canvas is intentionally flat; radial glow would read as a smudge. */
+  background-image: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Demo slider thumb — both engines */
+.demo-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.demo-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--accent);
 }
