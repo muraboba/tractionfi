@@ -16,6 +16,11 @@ build/
 # Vitest
 coverage/
 
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
 # TypeScript
 *.tsbuildinfo
 
