@@ -59,6 +59,19 @@ test.describe("RecommendationsTab v2 smoke (prod)", () => {
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 30_000 });
 
+    // ── STEP 0: Summary sidebar empty state (cf4a5db) ──────────────────────
+    // Input-driven metrics show '—' when 0; cashflow + net worth keep '$0'.
+    const sidebarRow = (label: string) =>
+      page
+        .getByText(label, { exact: true })
+        .locator("xpath=following-sibling::p[1]");
+    for (const label of ["Monthly income", "Monthly expenses", "Emergency fund", "Annual gross"]) {
+      await expect(sidebarRow(label)).toHaveText("—");
+    }
+    for (const label of ["Monthly cash flow", "Net worth"]) {
+      await expect(sidebarRow(label)).toHaveText("$0");
+    }
+
     // ── STEP 1: Recommendations is default tab, BlockedView with 2 blockers ─
     await expect(
       page.getByRole("tab", { name: /Recommendations/i }),
