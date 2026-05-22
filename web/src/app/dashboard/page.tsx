@@ -1,6 +1,7 @@
 'use client'
 
 import { Settings } from 'lucide-react'
+import { useState } from 'react'
 
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +20,7 @@ import { SummarySidebar } from './_components/summary-sidebar'
 
 export default function DashboardPage() {
   const { state, output, updateBlob, acceptServer, keepMine } = useEngineState()
+  const [tab, setTab] = useState<string>('recommendations')
 
   if (state.status === 'loading' || !output) {
     return (
@@ -69,7 +71,7 @@ export default function DashboardPage() {
 
           {state.status === 'offline' ? <OfflineBanner /> : null}
 
-          <Tabs defaultValue="recommendations">
+          <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
               <TabsTrigger value="paycheck">Paycheck</TabsTrigger>
               <TabsTrigger value="incomes">Incomes</TabsTrigger>
@@ -97,7 +99,12 @@ export default function DashboardPage() {
               <DebtsTab blob={state.blob} update={updateBlob} />
             </TabsContent>
             <TabsContent value="recommendations">
-              <RecommendationsTab output={output} blob={state.blob} update={updateBlob} />
+              <RecommendationsTab
+                output={output}
+                blob={state.blob}
+                update={updateBlob}
+                onNavigateToTab={(t) => setTab(t)}
+              />
             </TabsContent>
           </Tabs>
 
