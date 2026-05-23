@@ -70,27 +70,18 @@ export default function VerifyPendingPage() {
   }
 
   async function check() {
+    if (!email) { setCheckStatus('not-yet'); return }
     setCheckStatus('checking')
     try {
-      const res = await fetch('/api/auth/get-session')
+      // Query DB directly — the session may have stale emailVerified state
+      // (e.g. verified in another browser while this session was open).
+      const res = await fetch(`/api/check-verified?email=${encodeURIComponent(email)}`)
       if (!res.ok) { setCheckStatus('idle'); return }
-      const data = (await res.json()) as { user?: { email?: string; emailVerified?: boolean } } | null
-      const sessionUser = data?.user
-
-      // No session in this browser: verification happened elsewhere (cross-browser flow).
-      // The user has verified but needs to sign in here — send them to /login.
-      if (!sessionUser) {
+      const { verified } = (await res.json()) as { verified: boolean }
+      if (verified) {
+        // Sign out the stale session so /login starts fresh.
+        await fetch('/api/auth/sign-out', { method: 'POST' })
         window.location.href = '/login'
-        return
-      }
-
-      // Only trust the session as authoritative if it belongs to the same
-      // email this page is verifying. Otherwise a stale prior session (e.g.,
-      // someone signed up while already logged in as another verified user)
-      // would falsely satisfy the gate.
-      const matchesPendingEmail = email === null || sessionUser.email === email
-      if (matchesPendingEmail && sessionUser.emailVerified) {
-        window.location.href = '/dashboard'
       } else {
         setCheckStatus('not-yet')
       }
