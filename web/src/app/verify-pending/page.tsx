@@ -76,12 +76,20 @@ export default function VerifyPendingPage() {
       if (!res.ok) { setCheckStatus('idle'); return }
       const data = (await res.json()) as { user?: { email?: string; emailVerified?: boolean } } | null
       const sessionUser = data?.user
+
+      // No session in this browser: verification happened elsewhere (cross-browser flow).
+      // The user has verified but needs to sign in here — send them to /login.
+      if (!sessionUser) {
+        window.location.href = '/login'
+        return
+      }
+
       // Only trust the session as authoritative if it belongs to the same
       // email this page is verifying. Otherwise a stale prior session (e.g.,
       // someone signed up while already logged in as another verified user)
       // would falsely satisfy the gate.
-      const matchesPendingEmail = email === null || sessionUser?.email === email
-      if (matchesPendingEmail && sessionUser?.emailVerified) {
+      const matchesPendingEmail = email === null || sessionUser.email === email
+      if (matchesPendingEmail && sessionUser.emailVerified) {
         window.location.href = '/dashboard'
       } else {
         setCheckStatus('not-yet')
