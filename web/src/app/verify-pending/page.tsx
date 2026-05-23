@@ -74,8 +74,14 @@ export default function VerifyPendingPage() {
     try {
       const res = await fetch('/api/auth/get-session')
       if (!res.ok) { setCheckStatus('idle'); return }
-      const data = (await res.json()) as { user?: { emailVerified?: boolean } } | null
-      if (data?.user?.emailVerified) {
+      const data = (await res.json()) as { user?: { email?: string; emailVerified?: boolean } } | null
+      const sessionUser = data?.user
+      // Only trust the session as authoritative if it belongs to the same
+      // email this page is verifying. Otherwise a stale prior session (e.g.,
+      // someone signed up while already logged in as another verified user)
+      // would falsely satisfy the gate.
+      const matchesPendingEmail = email === null || sessionUser?.email === email
+      if (matchesPendingEmail && sessionUser?.emailVerified) {
         window.location.href = '/dashboard'
       } else {
         setCheckStatus('not-yet')
