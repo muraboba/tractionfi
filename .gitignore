@@ -63,3 +63,9 @@ sessions/
 
 # Legacy worker (superseded by web/ + D1)
 financial-assistant/
+
+# AI agent config files — internal development tooling, not public docs
+CLAUDE.md
+web/CLAUDE.md
+web/AGENTS.md
+tasks/
