@@ -59,3 +59,7 @@ desktop.ini
 *.swo
 
 # Session scratch (created by Claude Code during sessions)
+sessions/
+
+# Legacy worker (superseded by web/ + D1)
+financial-assistant/
