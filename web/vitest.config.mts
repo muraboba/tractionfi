@@ -9,6 +9,8 @@ export default defineConfig({
     }),
   ],
   test: {
+    // e2e/*.spec.ts are Playwright suites — they crash the workers pool if collected
+    include: ['tests/**/*.test.ts'],
     globalSetup: ['./tests/setup.ts'],
   },
 })
